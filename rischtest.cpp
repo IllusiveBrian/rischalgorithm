@@ -1,9 +1,9 @@
 #include "risch.h"
 
-using namespace std;
+//using namespace std;
 
 int main(){
-
+	
 	string sa = "x^2 + 7*x + -6";
 	string sb = "x^2 + -5*x + -6";
 

@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <utility>
 
-
 enum class type { broken, variable, scalar, addition, multiply, divide, cosine, sine, logarithm, exponential};
 
 class funk{

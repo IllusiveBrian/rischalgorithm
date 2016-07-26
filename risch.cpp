@@ -4,68 +4,69 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <utility>
+#include "risch.h"
+
+//enum class type { broken, variable, scalar, addition, multiply, divide, cosine, sine, logarithm, exponential};
+
+// class funk{
+
+// 	public:
+
+// 	funk();
+// 	funk(const funk &obj);
+// 	//funk(funk&& obj);	
+
+// 	~funk();
+
+// 	funk& operator=(const funk& obj);
+// 	//funk& operator=(const funk&& obj);
+
+// 	//operators needed:
+// 	funk& operator+(const funk& obj);	
+// 	funk& operator*(const funk& obj);
+// 	funk& operator/(const funk& obj);	
+
+// 	//need some way to incoroprate functions like sin, cos, tan.
+// 	//need some way to find neccisary functions...
+
+
+	
+// 	void reduce();
+	
+// 	int deg();
+// 	int coeff();
+// 	int lcoeff();
+// 	funk lt();
+// 	int cont();
+// 	void pp();	
+// 	void print();
+// 	///organize function tools
+// 	void supersimplify();
+// 	void simplify();
+// 	void intoReady();
+// 	void degOrg();
+// 	void degOrg(char c);
+	
+// 	//holds protostate during parsing
+// 	string pstring;
+
+// 	type state;
+// 	char var;
+// 	int sca;
+// 	int expo;	
+
+// 	vector <funk*> add;
+// 	vector <funk*> mul;
+// 	funk* num;
+// 	funk* den;
+
+// 	funk* sin;
+// 	funk* cos;
+// 	funk* log;
+// 	funk* exp;
+// };
 
 using namespace std;
-
-enum class type { broken, variable, scalar, addition, multiply, divide, cosine, sine, logarithm, exponential};
-
-class funk{
-
-	public:
-
-	funk();
-	funk(const funk &obj);
-	//funk(funk&& obj);	
-
-	~funk();
-
-	funk& operator=(const funk& obj);
-	//funk& operator=(const funk&& obj);
-
-	//operators needed:
-	funk& operator+(const funk& obj);	
-	funk& operator*(const funk& obj);
-	funk& operator/(const funk& obj);	
-
-	//need some way to incoroprate functions like sin, cos, tan.
-	//need some way to find neccisary functions...
-
-
-	
-	void reduce();
-	
-	int deg();
-	int coeff();
-	int lcoeff();
-	funk lt();
-	int cont();
-	void pp();	
-	void print();
-	///organize function tools
-	void supersimplify();
-	void simplify();
-	void intoReady();
-	void degOrg();
-	void degOrg(char c);
-	
-	//holds protostate during parsing
-	string pstring;
-
-	type state;
-	char var;
-	int sca;
-	int expo;	
-
-	vector <funk*> add;
-	vector <funk*> mul;
-	funk* num;
-	funk* den;
-
-	funk* sin;
-	funk* cos;
-	funk* log;
-	funk* exp;
-};
 
 funk::funk(void){
 	state = type::broken;
@@ -2100,90 +2101,4 @@ funk * string_to_funk(string in){
 	return start; 
 }
 
-int main(){
-	/*
-	int a;
-	cin >> a;
-	int b;
-	cin >> b;
-	cout << euA(a, b);
-	*/
-
-	string in;
-	cout << "Test polynomial: \n";
-	//getline(cin, in);
-
-	string sa = "8*x^3 + -14*x^2 + 7*x + -6";
-	//string sb = "-4*x^3 + -10*x^2 + 44*x + -30";
-	//string sb = "x^2 + 4*x + 4";
-	string sb = "2*x^3 + 5*x^2 + -22*x + 15 ";
-	
-	//in = "-1*x*x + 1";
-	//in = "x^2 + 5*x + 6";
-	in = "48*(1/x^3) + -84*x^2 + 42* (1/x) + -36 ";
-	//in = "(4*x^4)/(2*x^3*y)";
-	//in = "x^2 *((60*x)+ 50)";
-	//in = "x*x*y + x*x*x";
-	//in = "-34*x + 34*x";
-	
-		
-	
-	cout << in << endl;
-	funk * curr;
-	curr = string_to_funk(sa);
-	funk * carr;
-	carr = string_to_funk(sb);
-	curr -> simplify();
-	carr -> simplify();
-	cout << "before degorg" << endl;
-	curr -> print();
-	carr -> print();
-	cout << endl;
-	curr -> degOrg();
-	carr -> degOrg();
-	cout << "after degorg" << endl;
-
-	funk socks;
-	socks = GCD( *curr, *carr);
-	//socks = sqff(*carr, 'x');
-	
-	socks.print();
-	cout << endl;	
-/*
-	if (hasvar(*curr, 'x')){
-		cout << "success on x!\n";
-	}
-	if (hasvar(*curr, 'y')){
-		cout << "success on y!\n";
-	}
-
-	integrate(*curr, 'x').print();
-	cout << endl;
-	
-	funk * a;
-	funk * b;
-
-	
-	a = string_to_funk(sa);
-	a -> intoReady();
-	b = string_to_funk(sb);
-	b -> intoReady();
-
-	
-	cout << "\nOutput of same poly:\n";
-		curr -> intoReady();
-		cout << endl;
-	
-	funk gu;
-	gu = GCD(*curr, *b);
-	gu.intoReady();
-	gu.print();
-	
-	cout << endl;
-
-	derive(gu, 'x').print();
-	
-	cout << endl;
-*/
-	return 0;
-}
+//#endif

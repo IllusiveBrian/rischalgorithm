@@ -6,66 +6,6 @@
 #include <utility>
 #include "risch.h"
 
-//enum class type { broken, variable, scalar, addition, multiply, divide, cosine, sine, logarithm, exponential};
-
-// class funk{
-
-// 	public:
-
-// 	funk();
-// 	funk(const funk &obj);
-// 	//funk(funk&& obj);	
-
-// 	~funk();
-
-// 	funk& operator=(const funk& obj);
-// 	//funk& operator=(const funk&& obj);
-
-// 	//operators needed:
-// 	funk& operator+(const funk& obj);	
-// 	funk& operator*(const funk& obj);
-// 	funk& operator/(const funk& obj);	
-
-// 	//need some way to incoroprate functions like sin, cos, tan.
-// 	//need some way to find neccisary functions...
-
-
-	
-// 	void reduce();
-	
-// 	int deg();
-// 	int coeff();
-// 	int lcoeff();
-// 	funk lt();
-// 	int cont();
-// 	void pp();	
-// 	void print();
-// 	///organize function tools
-// 	void supersimplify();
-// 	void simplify();
-// 	void intoReady();
-// 	void degOrg();
-// 	void degOrg(char c);
-	
-// 	//holds protostate during parsing
-// 	string pstring;
-
-// 	type state;
-// 	char var;
-// 	int sca;
-// 	int expo;	
-
-// 	vector <funk*> add;
-// 	vector <funk*> mul;
-// 	funk* num;
-// 	funk* den;
-
-// 	funk* sin;
-// 	funk* cos;
-// 	funk* log;
-// 	funk* exp;
-// };
-
 using namespace std;
 
 funk::funk(void){
@@ -140,8 +80,6 @@ funk::~funk(void){
 	
 	}
 }
-
-
 
 int compareM(funk a){
 	switch(a.state){
@@ -961,6 +899,7 @@ void funk::simplify(){
 	
 		default:		cout << "This should never occur\n";
 		
+		//	
 	}
 }
 
@@ -1272,6 +1211,7 @@ funk rem(funk a, funk b){
 	return pdiv(a,b).second;
 }
 
+// from wikipedia (<3 Hubbubble)
 funk GCD(funk a, funk b){
 	funk *c = new funk;
 	funk d;

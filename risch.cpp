@@ -1450,8 +1450,8 @@ funk derivehandle(funk curr, char c){
 			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(newcos);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(newcos));
+			group -> mul.push_back(std::move(b));
 
 			return *group;
 			break;
@@ -1475,9 +1475,9 @@ funk derivehandle(funk curr, char c){
 			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(mone);
-			group -> mul.push_back(newcos);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(mone));
+			group -> mul.push_back(std::move(newcos));
+			group -> mul.push_back(std::move(b));
 
 			return *group;	
 			break;
@@ -1502,8 +1502,8 @@ funk derivehandle(funk curr, char c){
 			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(newlog);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(newlog));
+			group -> mul.push_back(std::move(b));
 
 			return *group;	
 			break;
@@ -1546,8 +1546,8 @@ funk table( funk curr, char x){
 		
 		std::unique_ptr<funk> vot(new funk);
 		vot -> state = type::multiply;
-		vot -> mul.push_back(curr2);
-		vot -> mul.push_back(coeff);
+		vot -> mul.push_back(std::move(curr2));
+		vot -> mul.push_back(std::move(coeff));
 
 		return *vot;
 	}if (curr.state == type::divide){
@@ -1574,8 +1574,8 @@ funk table( funk curr, char x){
 				
 				std::unique_ptr<funk> vot(new funk);
 				vot -> state = type::multiply;
-				vot -> mul.push_back(curr2);
-				vot -> mul.push_back(coeff);
+				vot -> mul.push_back(std::move(curr2));
+				vot -> mul.push_back(std::move(coeff));
 
 				return *vot;
 			}
@@ -1651,8 +1651,8 @@ funk integrate(funk curr, char x){
 		std::unique_ptr<funk> curry(new funk);
 		* curry = curr;
 
-		plusx -> mul.push_back(curry);
-		plusx -> mul.push_back(xp);
+		plusx -> mul.push_back(std::move(curry));
+		plusx -> mul.push_back(std::move(xp));
 
 		return *plusx;
 	}
@@ -1662,7 +1662,7 @@ funk integrate(funk curr, char x){
 		for ( int i = 0; i <  curr.add.size(); i++){
 		  std::unique_ptr<funk> vot(new funk);
 			*vot = integrate (*curr.add[i], x);
-			newf -> add.push_back(vot);
+			newf -> add.push_back(std::move(vot));
 		}
 		return *newf;
 	}
@@ -1681,8 +1681,8 @@ funk integrate(funk curr, char x){
 		std::unique_ptr<funk> vot(new funk);
 		* vot = integrate(curr, x);
 
-		newf -> mul.push_back(vot);
-		newf -> mul.push_back(temp);
+		newf -> mul.push_back(std::move(vot));
+		newf -> mul.push_back(std::move(temp));
 		return *newf;
 	}
 	//elseif hermite -> rothgar -> risch
@@ -1725,7 +1725,7 @@ funk sqff (funk a, char x){
 		*z = *w / *y;
 		
 		z -> expo = i;
-		output -> mul.push_back(z); 
+		output -> mul.push_back(std::move(z)); 
 		i++;
 		
 		*w = *y;
@@ -1735,7 +1735,7 @@ funk sqff (funk a, char x){
 	} 
 
 	w -> expo = i;
-	output -> mul.push_back(w);
+	output -> mul.push_back(std::move(w));
 	
 	return *output;
 }
@@ -1766,18 +1766,18 @@ funk rothtrag( funk a, funk b, char x){
 			int d = R.expo; 
 			if (d == 1){
 				c -> simplify();
-				integral -> add.push_back(logpart);
+				integral -> add.push_back(std::move(logpart));
 			}
 			else if (d == 2){
 			 	c -> simplify();
 				for (int n = 1; n < 2; n++){
 				  logpart -> log = std::move(c);
-					integral -> add.push_back(logpart);
+				  integral -> add.push_back(std::move(logpart));
 				}
 			}else{
 				for (int n = 1; n < d; n++){
 				  logpart -> log = std::move(c);
-					integral -> add.push_back(logpart);
+				  integral -> add.push_back(std::move(logpart));
 				}
 			}
 		}

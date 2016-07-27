@@ -12,17 +12,22 @@ int main(){
 	std::unique_ptr<funk> curr2;
 	curr2 = string_to_funk(sb);
 	
+	curr1 -> print();
+	std::cout << std::endl;
+	curr2 -> print();
+	std::cout << std::endl;	
+
 	//simplify into one function?
-	curr1 -> simplify();
-	curr1 -> degOrg();
+	//curr1 -> simplify();
+	//curr1 -> degOrg();
 
-	curr2 -> simplify();
-	curr2 -> degOrg();
+	//curr2 -> simplify();
+	//curr2 -> degOrg();
 
-	funk socks;
-	socks = GCD( *curr1, *curr2);
+	//funk socks;
+	//socks = GCD( *curr1, *curr2);
 	
-	socks.print();
+	//socks.print();
 	std::	cout << std::endl;
 	
 	return 0;

@@ -18,7 +18,7 @@ class funk{
 	funk(const funk &obj);
 	funk(funk&& obj);	
 
-	~funk();
+	//~funk();
 
 	funk& operator=(const funk& obj);
 	//funk& operator=(const funk&& obj);
@@ -30,7 +30,6 @@ class funk{
 
 	//need some way to incoroprate functions like sin, cos, tan.
 	//need some way to find neccisary functions...
-
 
 	
 	void reduce();
@@ -50,7 +49,7 @@ class funk{
 	void degOrg(char c);
 	
 	//holds protostate during parsing
-	//std::string pstring;
+	std::string pstring;
 
 	type state;
 	int coef;

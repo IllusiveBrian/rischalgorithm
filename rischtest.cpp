@@ -12,9 +12,9 @@ int main(){
 	std::unique_ptr<funk> curr2;
 	curr2 = string_to_funk(sb);
 	
-	curr1.print();
+	curr1 -> print();
 	std::cout << std::endl;
-	curr2.print();
+	curr2 -> print();
 	std::cout << std::endl;	
 
 	//simplify into one function?

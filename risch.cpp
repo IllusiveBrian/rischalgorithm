@@ -339,55 +339,55 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 */
 
 void funk::print(){
+	if (coef != 1){
+		cout << coef;
+	}
 
 	switch (state)
 	{
-		case type::variable: 	cout << var;
-					break;
-		case type::scalar: 	cout << sca;
+		case type::base: 	
+					if (expo != 0) cout << "x" ;
 					break;
 		case type::addition:			
 					cout << "(";
-					for (int i = 0; i < add.size(); i++){
-						add.at(i) -> print();
-						if (i+1 != add.size()) cout << "+";
-					}
+					nodeA -> print();
+					cout << "+";
+					nodeB -> print();			
 					cout << ")";
 					break;
 		case  type::multiply: 
 					cout << "(";
-					for (int i = 0; i < mul.size(); i++){
-						mul.at(i) -> print();
-						if (i+1 != mul.size()) cout << "*";
-					}
+					nodeA -> print();
+					cout << "*";
+					nodeB -> print();
 					cout << ")";
 					break;
 		case  type::divide:
 					cout << "(";
-					num -> print();
+					nodeA -> print();
 					cout << ")/(";
-					den -> print();
+					nodeB -> print();
 					cout << ")";
 					break;
 		
 		case  type::cosine:
 					cout << "cos(";
-					cos -> print();
+					nodeA -> print();
 					cout << ")";
 					break;
 		case  type::sine:
 					cout << "sin(";
-					sin -> print();
+					nodeA -> print();
 					cout << ")";
 					break;
 		case  type::logarithm:
 					cout << "log(";
-					log -> print();
+					nodeA -> print();
 					cout << ")";
 					break;
 		case type::exponential:
 					cout << "exp(";
-					exp -> print();
+					nodeA -> print();
 					cout << ")";
 					break;
 	
@@ -928,7 +928,6 @@ void funk::intoReady(){
 	simplify();
 	degOrg();
 }
-*/
 funk& funk::operator+(const funk& obj){
   std::unique_ptr<funk> objcopy(new funk);
 	* objcopy = obj;
@@ -979,7 +978,6 @@ funk& funk::operator/(const funk& obj){
 	return *ret;
 }
 
-/*
 funk fcoeff(funk curr, char c ){
 	if (curr.state == type::multiply){
 		int check = -1;
@@ -1690,7 +1688,6 @@ funk rothtrag( funk a, funk b, char x){
 	}
 	return (*integral);
 }
-/*
 funk horowitz(){
 	funk* poly = new funk;
 	poly -> state = type::addition;
@@ -1918,7 +1915,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 	return curr;
 }
 
-auto E2X(std::unique_ptr<funk> curr){
+std::unique_ptr<funk> E2X(std::unique_ptr<funk> curr){
 	for (int i = 0; i < curr -> pstring.size(); i++){	
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 

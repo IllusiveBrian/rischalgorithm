@@ -6,10 +6,10 @@ int main(){
 	std::string sa = "x^2 + 7*x + -6";
 	std::string sb = "x^2 + -5*x + -6";
 
-	funk * curr1;
+	std::unique_ptr<funk> curr1;
 	curr1 = string_to_funk(sa);
 
-	funk * curr2;
+	std::unique_ptr<funk> curr2;
 	curr2 = string_to_funk(sb);
 	
 	//simplify into one function?

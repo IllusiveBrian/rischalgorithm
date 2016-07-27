@@ -69,6 +69,6 @@ class funk{
 
 funk* string_to_funk(std::string);
 
-     funk GCD(funk, funk);
+funk GCD(funk, funk);
 
 #endif

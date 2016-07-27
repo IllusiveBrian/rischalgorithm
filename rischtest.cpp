@@ -1,12 +1,10 @@
 #include "risch.h"
 #include <string>
 
-
-
 int main(){
-
-std::string sa = "x^2 + 7*x + -6";
-std::string sb = "x^2 + -5*x + -6";
+	
+	std::string sa = "x^2 + 7*x + -6";
+	std::string sb = "x^2 + -5*x + -6";
 
 	funk * curr1;
 	curr1 = string_to_funk(sa);
@@ -25,7 +23,7 @@ std::string sb = "x^2 + -5*x + -6";
 	socks = GCD( *curr1, *curr2);
 	
 	socks.print();
-std::	cout << std::endl;
+	std::	cout << std::endl;
 	
 	return 0;
 }

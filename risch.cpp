@@ -12,6 +12,7 @@ using namespace std;
 funk::funk(void){
 	state = type::broken;
 	expo = 1;
+	coef = 1;
 }
 
 funk::funk(const funk &obj){
@@ -24,45 +25,8 @@ funk::funk(const funk &obj){
 	nodeA = obj.nodeA ? std::unique_ptr<funk>(new funk(*obj.nodeA)) : std::unique_ptr<funk>(nullptr);
 	nodeB = obj.nodeB ? std::unique_ptr<funk>(new funk(*obj.nodeB)) : std::unique_ptr<funk>(nullptr);
 }
-/*
-funk::~funk(void){
-	switch (state)
-	{
-		case type::addition:			
-					while (!add.empty()){
-						delete add.back();
-						add.pop_back();
-					}	
-					break;
-		case  type::multiply: 
-					while (!mul.empty()){
-						delete mul.back();
-						mul.pop_back();
-					}
-					break;
-		case  type::divide:
-					delete num;
-					delete den;
-					break;
-		
-		case  type::cosine:
-					delete cos;
-					break;
-		case  type::sine:
-					delete sin;
-					break;
-		case  type::logarithm:
-					delete log;
-					break;
-		case  type::exponential:
-					delete exp;
-					break;
-		default:
-					break;
-	
-					}
-}
 
+/*
 int compareM(funk a){
 	switch(a.state){
 		case type::scalar:
@@ -393,7 +357,7 @@ void funk::print(){
 	
 		default:		cout << "This should never occur also IB was here";
 	}
-	if (expo != 1) cout << "^" << expo ;
+	if (expo > 1) cout << "^" << expo ;
 }
 
 //just so you're aware, rem(a, b) is (a % b) ?
@@ -1908,6 +1872,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 	if (isOnlyDouble(curr -> pstring.c_str())){
 		curr -> coef = stod(curr -> pstring);
 		curr -> state = type::base;
+		curr -> expo = 0;
 	}else{
 		curr -> state = type::base;	
 	} 

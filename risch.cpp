@@ -37,6 +37,14 @@ funk::funk(const funk &obj){
 	exp = obj.exp ? std::unique_ptr<funk>(new funk(*obj.exp)) : std::unique_ptr<funk>(nullptr); 
 }
 
+funk::(funk&& obj){
+  this->state = obj.state;
+  this->coef = obj.coef;
+  this->expo = obj.expo;
+  this->nodeA.reset(std::move(obj.nodeA));
+  this->nodeB.reset(std::move(obj.nodeB));
+}
+
 funk::~funk(void){
   /*
 	switch (state)
@@ -205,34 +213,13 @@ void funk::reduce(){
 
 funk& funk::operator=(const funk& obj){
 	if (this != &obj)
-		{
-			state = obj.state;
-			var = obj.var;
-			sca = obj.sca;
-			expo = obj.expo;
-
-			while (!add.empty()){
-				add.pop_back();
-			}
-			while (!mul.empty()){
-				mul.pop_back();
-			}
-
-
-			for (int i = 0; i < obj.add.size(); i++){
-			  add.push_back(std::unique_ptr<funk>(new funk(*obj.add[i])));
-			}
-			for (int i = 0; i < obj.mul.size(); i++){
-			  mul.push_back(std::unique_ptr<funk>(new funk(*obj.mul[i])));
-			}
-			
-			num = obj.num ? std::unique_ptr<funk>(new funk(*obj.num)) : std::unique_ptr<funk>(nullptr);
-			den = obj.den ? std::unique_ptr<funk>(new funk(*obj.den)) : std::unique_ptr<funk>(nullptr);
-			sin = obj.sin ? std::unique_ptr<funk>(new funk(*obj.sin)) : std::unique_ptr<funk>(nullptr); 
-			cos = obj.cos ? std::unique_ptr<funk>(new funk(*obj.cos)) : std::unique_ptr<funk>(nullptr); 
-			log = obj.log ? std::unique_ptr<funk>(new funk(*obj.log)) : std::unique_ptr<funk>(nullptr); 
-			exp = obj.exp ? std::unique_ptr<funk>(new funk(*obj.exp)) : std::unique_ptr<funk>(nullptr); 
-		}
+	{
+	  this->state = obj.state;
+	  this->coef = obj.coef;
+	  this->expo = obj.expo;
+	  this->nodeA.reset(new funk(*obj.nodeA));
+	  this->nodeB.reset(new funk(*obj.nodeB));
+	}
 	return *this;
 }
 
@@ -963,38 +950,25 @@ void funk::intoReady(){
 	degOrg();
 }
 
-funk& funk::operator+(const funk& obj){
-  std::unique_ptr<funk> objcopy(new funk);
-	* objcopy = obj;
-	std::unique_ptr<funk> thiscopy(new funk);
-	* thiscopy = *this;
-
-	std::unique_ptr<funk> ret(new funk);
-	ret -> state = type::addition;
-
+funk funk::operator+(const funk& obj){
+  funk ret;
+	ret.state = type::addition;
 	
-	ret -> add.push_back(std::move(thiscopy));
-	ret -> add.push_back(std::move(objcopy));
+	ret.nodeA.reset(new funk(*this));
+	ret.nodeB.reset(new funk(obj));
+	//ret->simplify();
 
-	ret -> intoReady();
-
-	return *ret;
+	return ret;
 }
 
 funk& funk::operator*(const funk& obj){
-  std::unique_ptr<funk> objcopy(new funk);
-	* objcopy = obj;
-	std::unique_ptr<funk> thiscopy(new funk);
-	* thiscopy = *this;
+  funk ret;
+  ret.state = type:multiply;
+  ret.nodeA.reset(new funk(*this));
+  ret.nodeA.reset(new funk(obj));
 
-	std::unique_ptr<funk> ret(new funk);
-	ret -> state = type::multiply;
-
-	ret -> mul.push_back(std::move(thiscopy));
-	ret -> mul.push_back(std::move(objcopy));
-
-	ret -> intoReady();
-	return *ret;
+	//ret -> simplify();
+	return ret;
 }
 
 funk& funk::operator/(const funk& obj){
@@ -1003,14 +977,14 @@ funk& funk::operator/(const funk& obj){
   // 	std::unique_ptr<funk> thiscopy(new funk);
   // 	* thiscopy = *this;
 
-	std::unique_ptr<funk> ret(new funk);
-	ret -> state = type::divide;
+	funk ret();
+	ret.state = type::divide;
 
-	ret -> num.reset(new funk(*this));
-	ret -> den.reset(new funk(obj));
+	ret.num.reset(new funk(*this));
+	ret.den.reset(new funk(obj));
 	
-	ret -> intoReady();
-	return *ret;
+	//	ret.simplify();
+	return ret;
 }
 
 

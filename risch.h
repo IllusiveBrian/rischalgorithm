@@ -16,7 +16,7 @@ class funk{
 
 	funk();
 	funk(const funk &obj);
-	//funk(funk&& obj);	
+	funk(funk&& obj);	
 
 	~funk();
 
@@ -50,7 +50,7 @@ class funk{
 	void degOrg(char c);
 	
 	//holds protostate during parsing
-	std::string pstring;
+	//std::string pstring;
 
 	type state;
 	int coef;

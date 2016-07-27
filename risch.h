@@ -2,6 +2,7 @@
 #define _risch
 
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <string>
 #include <stdlib.h>
@@ -56,18 +57,18 @@ class funk{
 	int sca;
 	int expo;	
 
-	std::vector <funk*> add;
-	std::vector <funk*> mul;
-	funk* num;
-	funk* den;
+	std::vector <std::unique_ptr<funk>> add;
+	std::vector <std::unique_ptr<funk>> mul;
+	std::unique_ptr<funk> num;
+	std::unique_ptr<funk> den;
 
-	funk* sin;
-	funk* cos;
-	funk* log;
-	funk* exp;
+	std::unique_ptr<funk> sin;
+	std::unique_ptr<funk> cos;
+	std::unique_ptr<funk> log;
+	std::unique_ptr<funk> exp;
 };
 
-funk* string_to_funk(std::string);
+std::unique_ptr<funk> string_to_funk(std::string);
 
 funk GCD(funk, funk);
 

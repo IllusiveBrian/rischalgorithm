@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <utility>
+#include <memory>
 #include "risch.h"
 
 using namespace std;
@@ -11,12 +12,6 @@ using namespace std;
 funk::funk(void){
 	state = type::broken;
 	expo = 1;
-	num = nullptr;
-	den = nullptr;
-	cos = nullptr;
-	sin = nullptr;
-	log = nullptr;
-	exp = nullptr;
 }
 
 funk::funk(const funk &obj){
@@ -28,22 +23,22 @@ funk::funk(const funk &obj){
 	expo = obj.expo;
 	
 	for (int i = 0; i < obj.add.size(); i++){
-		add.push_back(new funk(*obj.add[i]));
+	  add.push_back(std::unique_ptr<funk>(new funk(*obj.add[i])));
 	}
 	for (int i = 0; i < obj.mul.size(); i++){
-		mul.push_back(new funk(*obj.mul[i]));
+	  mul.push_back(std::unique_ptr<funk>(new funk(*obj.mul[i])));
 	}
 	
-	num = obj.num ? new funk(*obj.num) : nullptr;
-	den = obj.den ? new funk(*obj.den) : nullptr;
-	sin = obj.sin ? new funk(*obj.sin) : nullptr; 
-	cos = obj.cos ? new funk(*obj.cos) : nullptr; 
-	log = obj.log ? new funk(*obj.log) : nullptr; 
-	exp = obj.exp ? new funk(*obj.exp) : nullptr; 
+	num = obj.num ? std::unique_ptr<funk>(new funk(*obj.num)) : std::unique_ptr<funk>(nullptr);
+	den = obj.den ? std::unique_ptr<funk>(new funk(*obj.den)) : std::unique_ptr<funk>(nullptr);
+	sin = obj.sin ? std::unique_ptr<funk>(new funk(*obj.sin)) : std::unique_ptr<funk>(nullptr); 
+	cos = obj.cos ? std::unique_ptr<funk>(new funk(*obj.cos)) : std::unique_ptr<funk>(nullptr); 
+	log = obj.log ? std::unique_ptr<funk>(new funk(*obj.log)) : std::unique_ptr<funk>(nullptr); 
+	exp = obj.exp ? std::unique_ptr<funk>(new funk(*obj.exp)) : std::unique_ptr<funk>(nullptr); 
 }
 
 funk::~funk(void){
-
+  /*
 	switch (state)
 	{
 		case type::addition:			
@@ -78,7 +73,7 @@ funk::~funk(void){
 		default:
 					break;
 	
-	}
+					}*/
 }
 
 int compareM(funk a){
@@ -149,17 +144,17 @@ int compareA(funk a){
 
 
 void funk::reduce(){
-	funk * temp;
+	std::unique_ptr<funk> temp;
 	switch (state)
 	{
 		case type::addition:
-					temp = add.at(0);
+		  temp = std::move(add.at(0));
 					break;	
 		case type::multiply:
-					temp = mul.at(0);
+		  temp = std::move(mul.at(0));
 					break;
 		case type::divide:
-					temp = num;
+		  temp = std::move(num);
 					break;
 		default: return;
 	}
@@ -175,23 +170,23 @@ void funk::reduce(){
 	
 	
 	while (!temp -> add.empty()){
-		add.push_back(temp -> add.back());	
+	  add.push_back(std::move(temp -> add.back()));	
 		temp -> add.pop_back();
 	}
 	while (!temp -> mul.empty()){
-		mul.push_back(temp -> mul.back());
+	  mul.push_back(std::move(temp -> mul.back()));
 		temp -> mul.pop_back();
 	}
 	
 	if (state != type::divide){
-		num = temp -> num;
-		den = temp -> den;
+	  num = std::move(temp -> num);
+	  den = std::move(temp -> den);
 	}
-	sin = temp -> sin;
-	cos = temp -> cos;
-	log = temp -> log;
-	exp = temp -> exp;
-
+	sin = std::move(temp -> sin);
+	cos = std::move(temp -> cos);
+	log = std::move(temp -> log);
+	exp = std::move(temp -> exp);
+ 
 	switch (state)
 	{
 		case type::addition:
@@ -201,9 +196,8 @@ void funk::reduce(){
 					mul.erase(mul.begin());
 					break;
 		case type::divide:
-					delete den;
-					den = temp -> den;
-					num = temp -> num;	
+		  den = std::move(temp -> den);
+		  num = std::move(temp -> num);	
 	}
 	
 	state = tempstate;
@@ -226,18 +220,18 @@ funk& funk::operator=(const funk& obj){
 
 
 			for (int i = 0; i < obj.add.size(); i++){
-				add.push_back(new funk(*obj.add[i]));
+			  add.push_back(std::unique_ptr<funk>(new funk(*obj.add[i])));
 			}
 			for (int i = 0; i < obj.mul.size(); i++){
-				mul.push_back(new funk(*obj.mul[i]));
+			  mul.push_back(std::unique_ptr<funk>(new funk(*obj.mul[i])));
 			}
 			
-			num = obj.num ? new funk(*obj.num) : nullptr;
-			den = obj.den ? new funk(*obj.den) : nullptr;
-			sin = obj.sin ? new funk(*obj.sin) : nullptr; 
-			cos = obj.cos ? new funk(*obj.cos) : nullptr; 
-			log = obj.log ? new funk(*obj.log) : nullptr; 
-			exp = obj.exp ? new funk(*obj.exp) : nullptr; 
+			num = obj.num ? std::unique_ptr<funk>(new funk(*obj.num)) : std::unique_ptr<funk>(nullptr);
+			den = obj.den ? std::unique_ptr<funk>(new funk(*obj.den)) : std::unique_ptr<funk>(nullptr);
+			sin = obj.sin ? std::unique_ptr<funk>(new funk(*obj.sin)) : std::unique_ptr<funk>(nullptr); 
+			cos = obj.cos ? std::unique_ptr<funk>(new funk(*obj.cos)) : std::unique_ptr<funk>(nullptr); 
+			log = obj.log ? std::unique_ptr<funk>(new funk(*obj.log)) : std::unique_ptr<funk>(nullptr); 
+			exp = obj.exp ? std::unique_ptr<funk>(new funk(*obj.exp)) : std::unique_ptr<funk>(nullptr); 
 		}
 	return *this;
 }
@@ -273,7 +267,7 @@ int funk::deg(){
 	}
 }
 
-bool degCompare( funk * a, funk * b){
+bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 	
 	if (a -> expo > b -> expo){
 		return a -> expo > b -> expo;
@@ -411,7 +405,7 @@ void funk::print(){
 					cout << ")";
 					break;
 	
-		default:		cout << "This should never occur ";
+		default:		cout << "This should never occur also IB was here";
 	}
 	if (expo != 1) cout << "^" << expo ;
 }
@@ -425,16 +419,16 @@ void funk::supersimplify(){
 	
 	for (int i = 0; i < add.size(); i++){
 		if (add[i] -> state == type::variable){
-			funk * temp = new funk;
+		  std::unique_ptr<funk> temp = std::unique_ptr<funk>(new funk);
 			temp -> state = type::multiply;
-			funk * one = new funk;
+			std::unique_ptr<funk> one = std::unique_ptr<funk>(new funk);
 			one -> state = type::scalar;
 			one -> sca = 1;
 			
-			temp -> mul.push_back(one);
-			temp -> mul.push_back(add[i]);
+			temp -> mul.push_back(std::move(one));
+			temp -> mul.push_back(std::move(add[i]));
 		
-			add[i] = temp;
+			add[i] = std::move(temp);
 		}
 	}
 
@@ -446,14 +440,16 @@ void funk::supersimplify(){
 					for(int y = 0; y < add.at(j) -> mul.size() && y < add.at(i) -> mul.size(); y++){
 						if (y == 0){
 						}else{
-							const funk * a = add.at(i) -> mul.at(y);
-							const funk * b = add.at(j) -> mul.at(y);
+							#define a add.at(i) -> mul.at(y)
+							#define b add.at(j) -> mul.at(y)
 							if (a -> state != type::variable || b -> state != type::variable){
 								confirm = false;	
 							}
 							if ( a -> var != b -> var || a -> expo != b -> expo){
 								confirm = false;
 							}
+							#undef a
+							#undef b
 						}
 					}
 					if (confirm){
@@ -487,7 +483,7 @@ void funk::simplify(){
 						
 						if (add.at(i) -> state == type::addition){
 							while (!(add.at(i) -> add.empty()) ){
-								add.push_back(add.at(i) -> add.back());
+							  add.push_back(std::move(add.at(i) -> add.back()));
 								add.at(i) -> add.pop_back();
 							}
 							add.erase(add.begin() + i);
@@ -543,14 +539,15 @@ void funk::simplify(){
 								if (i != 0){
 								
 									
-									funk *temp;
-									funk *scaful = new funk;
+									std::unique_ptr<funk> temp;
+									std::unique_ptr<funk> scaful(new funk);
 									scaful -> state = type::scalar;
 									scaful -> sca = mul.at(i) -> sca;
-									
-									temp = mul.at(0);
+
+									std::swap(mul.at(0), mul.at(i));
+									/*temp = mul.at(0);
 									mul.at(0) = scaful;
-									mul.at(i) = temp;
+									mul.at(i) = temp;*/
 								
 								}
 								scabegin = 0;
@@ -586,10 +583,11 @@ void funk::simplify(){
 							for (int j = i+1; j < mul.size(); j++){
 								if (mul.at(j) -> state == type::variable){
 									if (mul.at(i) -> var >  mul.at(j) -> var){
-										funk * temp;
-										temp = mul.at(j);
+									  //std::unique_ptr<funk> temp;
+										std::swap(mul.at(j), mul.at(i));
+										/*temp = mul.at(j);
 										mul.at(j) = mul.at(i);
-										mul.at(i) = temp;
+										mul.at(i) = temp;*/
 										i = 0;
 									}
 								}
@@ -601,10 +599,10 @@ void funk::simplify(){
 					for (int i = 0; i < mul.size(); i++ ){
 						if (mul.at(i) -> state == type::multiply){
 							while (!(mul.at(i) -> mul.empty()) ){
-								mul.push_back(mul.at(i) -> mul.back());
+							  mul.push_back(std::move(mul.at(i) -> mul.back()));
 								mul.at(i) -> mul.pop_back();
 							}
-							delete mul.at(i);
+							//delete mul.at(i);
 							mul.erase(mul.begin() + i);
 						}
 					}
@@ -613,14 +611,14 @@ void funk::simplify(){
 						if (mul.at(i) -> state == type::addition){
 							if (scabegin != -1){
 								for(int j = 0; j < mul.at(i) -> add.size(); j++){
-									funk* temp = new funk;
+								  std::unique_ptr<funk> temp(new funk);
 									temp -> state = type::multiply;
-									funk* tempsca = new funk;
+									std::unique_ptr<funk> tempsca(new funk);
 									tempsca -> state = type::scalar;
 									tempsca -> sca = mul.at(0) -> sca;
-									temp -> mul.push_back(tempsca);
-									temp -> mul.push_back(mul.at(i) -> add.at(j));
-									mul.at(i) -> add.at(j) = temp;
+									temp -> mul.push_back(std::move(tempsca));
+									temp -> mul.push_back(std::move(mul.at(i) -> add.at(j)));
+									mul.at(i) -> add.at(j) = std::move(temp);
 								}
 								mul.erase(mul.begin());
 							}
@@ -640,22 +638,22 @@ void funk::simplify(){
 						}
 						if (i != addbegin){
 							if (addbegin != -1 && mul[i] -> state != type::addition){
-								funk* temp = new funk;
+							  std::unique_ptr<funk> temp(new funk);
 								temp -> state = type::addition;
 								for (int j = 0; j < mul.at(addbegin) -> add.size(); j++){
-									funk* tempmult = new funk;
+								  std::unique_ptr<funk> tempmult(new funk);
 									tempmult -> state = type::multiply;
 									
-									funk * tempA = new funk;
-									funk * tempB = new funk;
+									std::unique_ptr<funk> tempA(new funk);
+									std::unique_ptr<funk> tempB(new funk);
 									
 									*tempA = *(mul.at(addbegin) -> add.at(j));
 									*tempB = *(mul.at(i));
 
-									tempmult -> mul.push_back(tempA);
-									tempmult -> mul.push_back(tempB);
+									tempmult -> mul.push_back(std::move(tempA));
+									tempmult -> mul.push_back(std::move(tempB));
 									
-									temp -> add.push_back(tempmult);
+									temp -> add.push_back(std::move(tempmult));
 								}
 								
 								if (i > addbegin){
@@ -665,30 +663,30 @@ void funk::simplify(){
 								mul.erase(mul.begin() + addbegin);
 								mul.erase(mul.begin() + i);
 								}
-								mul.push_back(temp);
+								mul.push_back(std::move(temp));
 								simplify();
 								i = 0;
 								addbegin = -1;
 							}else if (addbegin != -1 && mul[i] -> state == type::addition){	
-								funk* temp = new funk;
+							  std::unique_ptr<funk> temp(new funk);
 								temp -> state = type::addition;
 								
 								for (int j = 0; j < mul.at(addbegin) -> add.size() ; j++){
 									for (int k = 0; k < mul.at(i) -> add.size(); k++){
 										
-										funk* tempmult = new funk;
+									  std::unique_ptr<funk> tempmult(new funk);
 										tempmult -> state = type::multiply;
 										
-										funk * tempA = new funk;
-										funk * tempB = new funk;
+										std::unique_ptr<funk> tempA(new funk);
+										std::unique_ptr<funk> tempB(new funk);
 										
 										*tempA = *(mul.at(addbegin) -> add.at(j));
 										*tempB = *(mul.at(i) -> add.at(k));
 		
-										tempmult -> mul.push_back(tempA);
-										tempmult -> mul.push_back(tempB);
+										tempmult -> mul.push_back(std::move(tempA));
+										tempmult -> mul.push_back(std::move(tempB));
 										
-										temp -> add.push_back(tempmult);
+										temp -> add.push_back(std::move(tempmult));
 									}
 								}
 								if (i > addbegin){
@@ -700,7 +698,7 @@ void funk::simplify(){
 								}
 
 								
-								mul.push_back(temp);
+								mul.push_back(std::move(temp));
 								simplify();
 								i = 0;
 								addbegin = -1;
@@ -713,7 +711,7 @@ void funk::simplify(){
 					/*
 					for (int i = 0; i < mul.size(); i++){
 						if (mul[i] -> state == type::divide){
-							funk * temp = new funk;
+							std::unique_ptr<funk> temp = new funk;
 							temp -> state = type::multiply;
 							for (int j = mul.size(); j >= 0 ; j--){
 								if (!(i == j || mul[j] -> state == type::divide)){
@@ -744,25 +742,25 @@ void funk::simplify(){
 					}
 					if (den -> state == type::variable && num -> state == type::variable){
 						if ((num -> var) == (den -> var)){
-							funk * one = new funk;
+						  std::unique_ptr<funk> one(new funk);
 							one -> state = type::scalar;
 							one -> sca = 1;
  
 							if ((num -> expo) < (den -> expo)){
 								den -> expo = (den -> expo) - (num -> expo);
-								num = one;
+								num = std::move(one);
 							}
 							if ((num -> expo) == (den -> expo)){
-								funk *one2 = new funk;
+							  std::unique_ptr<funk>one2(new funk);
 								one2 -> state = type::scalar;
 								one2 -> sca = 1;
 
-								num = one;
-								den = one2;
+								num = std::move(one);
+								den = std::move(one2);
 							}
 							if ((num -> expo) > (den -> expo)){
 								num -> expo = (num -> expo) - (den -> expo);
-								den = one;
+								den = std::move(one);
 							}
 						}	
 					}
@@ -777,48 +775,48 @@ void funk::simplify(){
 											den -> mul[i] -> sca = 1;
 										}
 										else{
-											funk * divi = new funk;
+										  std::unique_ptr<funk> divi(new funk);
 											divi -> state = type::divide;
 											
-											divi -> num = num -> mul[j];
-											divi -> den = den -> mul[i];
+											divi -> num = std::move(num -> mul[j]);
+											divi -> den = std::move(den -> mul[i]);//This is not right, this will be undefined when dereferenced in three lines
 
-											num -> mul[j]  = divi;
-											den -> mul[i] -> sca = 1;
+											num -> mul[j]  = std::move(divi);
+											//den -> mul[i] -> sca = 1; This is undefined behavior due to move above
 										}
 									}
 									if (den -> mul[i] -> state == type::variable
 									&& den -> mul[i] -> var == num -> mul [j] -> var ){
-										funk * den1;
-										funk * num1;
+										std::unique_ptr<funk> den1;
+										std::unique_ptr<funk> num1;
 										
-										den1 = den-> mul[i];
-										num1 = num-> mul[j];
+										den1 = std::move(den-> mul[i]);
+										num1 = std::move(num-> mul[j]);
 	
-										funk * one = new funk;
+										std::unique_ptr<funk> one(new funk);
 										one -> state = type::scalar;
 										one -> sca = 1;
 			 
 										if ((num1 -> expo) < (den1 -> expo)){
 											den1 -> expo = (den1 -> expo) - (num1 -> expo);
-											num1 = one;
+											num1 = std::move(one);
 										}
 										if ((num1 -> expo) == (den1 -> expo)){
-											funk *one2 = new funk;
+										  std::unique_ptr<funk> one2(new funk);
 											one2 -> state = type::scalar;
 											one2 -> sca = 1;
 
-											num1 = one;
-											den1 = one2;
+											num1 = std::move(one);
+											den1 = std::move(one2);
 										}
 										if ((num1 -> expo) > (den1 -> expo)){
 											num1 -> expo = (num1 -> expo) - (den1 -> expo);
-											den1 = one;
+											den1 = std::move(one);
 										}
 
 										
-										den -> mul [i] = den1;
-										num -> mul [j] = num1;
+										den -> mul [i] = std::move(den1);
+										num -> mul [j] = std::move(num1);
 
 									}
 								}
@@ -836,48 +834,49 @@ void funk::simplify(){
 										den -> sca = 1;
 									}
 									else{
-										funk * divi = new funk;
+									  std::unique_ptr<funk> divi(new funk);
 										divi -> state = type::divide;
 										
-										divi -> num = num -> mul[j];
-										divi -> den = den;
+										divi -> num = std::move(num -> mul[j]);
+										divi -> den = std::move(den);
 
-										num -> mul[j]  = divi;
+										num -> mul[j]  = std::move(divi);
+										den.reset(new funk);
 										den ->  sca = 1;
 									}
 								}
 								if (den -> state == type::variable
 								&& den -> var == num  -> mul[j] -> var ){
-									funk * den1;
-									funk * num1;
+									std::unique_ptr<funk> den1;
+									std::unique_ptr<funk> num1;
 									
-									den1 = den;
-									num1 = num-> mul[j];
+									den1 = std::move(den);
+									num1 = std::move(num-> mul[j]);
 
-									funk * one = new funk;
+									std::unique_ptr<funk> one(new funk);
 									one -> state = type::scalar;
 									one -> sca = 1;
 		 
 									if ((num1 -> expo) < (den1 -> expo)){
 										den1 -> expo = (den1 -> expo) - (num1 -> expo);
-										num1 = one;
+										num1 = std::move(one);
 									}
 									if ((num1 -> expo) == (den1 -> expo)){
-										funk *one2 = new funk;
+									  std::unique_ptr<funk> one2(new funk);
 										one2 -> state = type::scalar;
 										one2 -> sca = 1;
 
-										num1 = one;
-										den1 = one2;
+										num1 = std::move(one);
+										den1 = std::move(one2);
 									}
 									if ((num1 -> expo) > (den1 -> expo)){
 										num1 -> expo = (num1 -> expo) - (den1 -> expo);
-										den1 = one;
+										den1 = std::move(one);
 									}
 
 									
-									den  = den1;
-									num -> mul [j] = num1;
+									den  = std::move(den1);
+									num -> mul [j] = std::move(num1);
 
 								}
 							}
@@ -911,18 +910,20 @@ void funk::degOrg(){
 				add[j] -> degOrg();
 				if (compareA(*add[i]) == compareA(*add[j])){
 					if (degCompare(add[j], add[i])){
-
-						funk * temp;
+					  std::swap(add[i], add[j]);
+					  /*
+						std::unique_ptr<funk> temp;
 						temp = add[i];
 						add[i] = add[j];
-						add[j] = temp;
+						add[j] = temp;*/
 					}
 				}else if (compareA(*add[j]) > compareA(*add[i])){
 
-					funk * temp;
+				  std::swap(add[i], add[j]);
+				  /*std::unique_ptr<funk> temp;
 					temp = add[i];
 					add[i] = add[j];
-					add[j] = temp;
+					add[j] = temp;*/
 				}
 			}
 		}
@@ -935,18 +936,19 @@ void funk::degOrg(){
 				mul[j] -> degOrg();
 				if (compareA(*mul[i]) == compareA(*mul[j])){
 					if (degCompare(mul[j], mul[i])){
-
-						funk * temp;
+					  std::swap(mul[j], mul[i]);
+					  /*
+						std::unique_ptr<funk> temp;
 						temp = mul[i];
 						mul[i] = mul[j];
-						mul[j] = temp;	
+						mul[j] = temp;	*/
 					}
 				}else if (compareA(*mul[j]) > compareA(*mul[i])){
-
-					funk * temp;
+				  std::swap(mul[j], mul[i]);
+				  /*	std::unique_ptr<funk> temp;
 					temp = mul[i];
 					mul[i] = mul[j];
-					mul[j] = temp;
+					mul[j] = temp;*/
 				}
 			}
 		}
@@ -962,17 +964,17 @@ void funk::intoReady(){
 }
 
 funk& funk::operator+(const funk& obj){
-	funk * objcopy = new funk;
+  std::unique_ptr<funk> objcopy(new funk);
 	* objcopy = obj;
-	funk * thiscopy = new funk;
+	std::unique_ptr<funk> thiscopy(new funk);
 	* thiscopy = *this;
 
-	funk * ret = new funk;
+	std::unique_ptr<funk> ret(new funk);
 	ret -> state = type::addition;
 
 	
-	ret -> add.push_back(thiscopy);
-	ret -> add.push_back(objcopy);
+	ret -> add.push_back(std::move(thiscopy));
+	ret -> add.push_back(std::move(objcopy));
 
 	ret -> intoReady();
 
@@ -980,32 +982,32 @@ funk& funk::operator+(const funk& obj){
 }
 
 funk& funk::operator*(const funk& obj){
-	funk * objcopy = new funk;
+  std::unique_ptr<funk> objcopy(new funk);
 	* objcopy = obj;
-	funk * thiscopy = new funk;
+	std::unique_ptr<funk> thiscopy(new funk);
 	* thiscopy = *this;
 
-	funk * ret = new funk;
+	std::unique_ptr<funk> ret(new funk);
 	ret -> state = type::multiply;
 
-	ret -> mul.push_back(thiscopy);
-	ret -> mul.push_back(objcopy);
+	ret -> mul.push_back(std::move(thiscopy));
+	ret -> mul.push_back(std::move(objcopy));
 
 	ret -> intoReady();
 	return *ret;
 }
 
 funk& funk::operator/(const funk& obj){
-	funk * objcopy = new funk;
-	* objcopy = obj;
-	funk * thiscopy = new funk;
-	* thiscopy = *this;
+  // std::unique_ptr<funk> objcopy(new funk);
+  // 	* objcopy = obj;
+  // 	std::unique_ptr<funk> thiscopy(new funk);
+  // 	* thiscopy = *this;
 
-	funk * ret = new funk;
+	std::unique_ptr<funk> ret(new funk);
 	ret -> state = type::divide;
 
-	ret -> num = thiscopy;
-	ret -> den = objcopy;
+	ret -> num.reset(new funk(*this));
+	ret -> den.reset(new funk(obj));
 	
 	ret -> intoReady();
 	return *ret;
@@ -1132,7 +1134,7 @@ void funk::pp(){
 pair <funk, funk> pdiv( funk a, funk b){
 	/*
 	if (b.state == type::scalar && b.sca == 1){	
-		funk * zip = new funk;
+		std::unique_ptr<funk> zip = new funk;
 		zip -> state = type::scalar;
 		zip -> sca = 0;
 
@@ -1140,11 +1142,11 @@ pair <funk, funk> pdiv( funk a, funk b){
 	}
 	*/
 	funk p;
-	funk * r = new funk;
+	std::unique_ptr<funk> r(new funk);
 	r -> state = type::scalar;
 	r -> sca = 0;
 
-	funk * q = new funk;
+	std::unique_ptr<funk> q(new funk);
 	* q = * r;
 
 	p = a;
@@ -1159,7 +1161,7 @@ pair <funk, funk> pdiv( funk a, funk b){
 			b.lt().print();
 			cout << " = ";
 		
-			funk * qtemp = new funk;
+			std::unique_ptr<funk> qtemp(new funk);
 			* qtemp = p.lt() / b.lt();
 
 			qtemp -> print(); 
@@ -1167,11 +1169,11 @@ pair <funk, funk> pdiv( funk a, funk b){
 			
 			* q = * q + *qtemp;
 
-			funk* none = new funk;
+			std::unique_ptr<funk> none(new funk);
 			none -> state = type::scalar;
 			none -> sca = -1;
 
-			funk * ptemp = new funk;
+			std::unique_ptr<funk> ptemp(new funk);
 			* ptemp = p.lt() / b.lt();
 
 			* ptemp = (*none) * (*ptemp);
@@ -1182,7 +1184,7 @@ pair <funk, funk> pdiv( funk a, funk b){
 		}else{
 			*r = *r + p.lt();
 				
-			funk* negone = new funk;
+			std::unique_ptr<funk> negone(new funk);
 			negone -> state = type::scalar;
 			negone -> sca = -1;
 			
@@ -1213,7 +1215,7 @@ funk rem(funk a, funk b){
 
 // from wikipedia (<3 Hubbubble)
 funk GCD(funk a, funk b){
-	funk *c = new funk;
+  std::unique_ptr<funk> c (new funk);
 	funk d;
 
 	*c = a;
@@ -1240,14 +1242,14 @@ funk GCD(funk a, funk b){
 		cout << i << ":2d(x) "; d.print(); cout << endl;
 	}
 
-	funk *g = new funk;
+	std::unique_ptr<funk> g(new funk);
 	g -> state = type::multiply;
-	funk *y = new funk;
+	std::unique_ptr<funk> y(new funk);
 	y -> state = type::scalar;
 	y -> sca = iGCD( a.cont(), b.cont());
 	
-	g -> mul.push_back(y);
-	g -> mul.push_back(c);
+	g -> mul.push_back(std::move(y));
+	g -> mul.push_back(std::move(c));
 	g -> intoReady();
 	return *g;
 }
@@ -1300,20 +1302,20 @@ funk derive(funk curr, char c);
 
 funk derivehandle(funk curr, char c){
 	if (!contains(curr, c)){
-		funk * zip = new funk;
+	  std::unique_ptr<funk> zip(new funk);
 		zip -> state = type::scalar;
 		zip -> sca = 0;
 		return *zip;
 	}
 
 	if (curr.expo > 1){
-		funk * expand = new funk;
+	  std::unique_ptr<funk> expand(new funk);
 		expand -> state = type::multiply;
 
 		for (int i = 0; i < curr.expo; i++){
-			funk * currcopy = new funk;
+		  std::unique_ptr<funk> currcopy(new funk);
 			*currcopy = curr;
-			expand -> mul.push_back(currcopy);
+			expand -> mul.push_back(std::move(currcopy));
 			expand -> mul.back() -> expo = 1;
 		}
 		return derive(*expand, c);
@@ -1323,7 +1325,7 @@ funk derivehandle(funk curr, char c){
 		case type::variable:
 			{
 				if (curr.var == c){
-					funk * one = new funk;
+				  std::unique_ptr<funk> one(new funk);
 					one -> state = type::scalar;
 					one -> sca = 1;
 					return *one;
@@ -1340,10 +1342,10 @@ funk derivehandle(funk curr, char c){
 			while (	curr.mul.size() > 1){
 				// (a*b)' = a*b' + b*a'
 
-				funk * aprime = new funk;
-				funk * a = new funk;
-				funk * bprime = new funk;
-				funk * b = new funk;
+			  std::unique_ptr<funk> aprime(new funk);
+			  std::unique_ptr<funk> a(new funk);
+			  std::unique_ptr<funk> bprime(new funk);
+			  std::unique_ptr<funk> b(new funk);
 				
 				*aprime = derive(*curr.mul[0], c);
 				*a = *curr.mul[0];
@@ -1351,22 +1353,22 @@ funk derivehandle(funk curr, char c){
 				*b = *curr.mul[1];
 
 
-				funk * mula = new funk;
+				std::unique_ptr<funk> mula(new funk);
 				mula -> state = type::multiply;
-				mula -> mul.push_back(a);
-				mula -> mul.push_back(bprime);
+				mula -> mul.push_back(std::move(a));
+				mula -> mul.push_back(std::move(bprime));
 
-				funk * mulb = new funk;
+				std::unique_ptr<funk> mulb(new funk);
 				mulb -> state = type::multiply;
-				mulb -> mul.push_back(b);
-				mulb -> mul.push_back(aprime);
+				mulb -> mul.push_back(std::move(b));
+				mulb -> mul.push_back(std::move(aprime));
 
-				funk * addi = new funk;
+				std::unique_ptr<funk> addi(new funk);
 				addi -> state = type::addition;
-				addi -> add.push_back(mula);
-				addi -> add.push_back(mulb);
+				addi -> add.push_back(std::move(mula));
+				addi -> add.push_back(std::move(mulb));
 				
-				curr.mul.push_back(addi);
+				curr.mul.push_back(std::move(addi));
 				curr.mul.erase(curr.mul.begin() + 1);
 				curr.mul.erase(curr.mul.begin());
 			}
@@ -1376,20 +1378,20 @@ funk derivehandle(funk curr, char c){
 		case type::sine:
 		{
 			curr.state = type::cosine;
-			curr.cos = curr.sin;
-			curr.sin = nullptr;
+			curr.cos = std::move(curr.sin);
+			curr.sin.reset(nullptr);
 	
-			funk * newcos = new funk;
+			std::unique_ptr<funk> newcos(new funk);
 			*newcos = curr;
 
-			funk * b = new funk;
+			std::unique_ptr<funk> b(new funk);
 			*b = derive(*curr.cos, c);
 			
-			funk *  group = new funk;
+			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(newcos);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(newcos));
+			group -> mul.push_back(std::move(b));
 
 			return *group;
 			break;
@@ -1397,51 +1399,51 @@ funk derivehandle(funk curr, char c){
 		case type::cosine:
 		{
 			curr.state = type::sine;
-			curr.sin = curr.cos;
-			curr.cos = nullptr;
+			curr.sin = std::move(curr.cos);
+			curr.cos.reset(nullptr);
 
-			funk * newcos = new funk;
+			std::unique_ptr<funk> newcos(new funk);
 			*newcos = curr;
 
-			funk * mone = new funk;
+			std::unique_ptr<funk> mone(new funk);
 			newcos -> state = type::scalar;
 			newcos -> sca = -1;
 			
-			funk * b = new funk;
+			std::unique_ptr<funk> b(new funk);
 			*b = derive(*curr.sin, c);
 			
-			funk *  group = new funk;
+			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(mone);
-			group -> mul.push_back(newcos);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(mone));
+			group -> mul.push_back(std::move(newcos));
+			group -> mul.push_back(std::move(b));
 
 			return *group;	
 			break;
 		}
 		case type::logarithm:
 		{	
-			funk * incopy = new funk;
+		  std::unique_ptr<funk> incopy(new funk);
 			*incopy = *curr.log;
 			
-			funk * one = new funk;
+			std::unique_ptr<funk> one(new funk);
 			one -> state = type::scalar;
 			one -> sca = 1;
 			
-			funk * newlog = new funk;
+			std::unique_ptr<funk> newlog(new funk);
 			newlog -> state = type::divide;
-			newlog -> num = one;
-			newlog -> den = incopy;
+			newlog -> num = std::move(one);
+			newlog -> den = std::move(incopy);
 
-			funk * b = new funk;
+			std::unique_ptr<funk> b(new funk);
 			*b = derive(*curr.log, c);
 			
-			funk *  group = new funk;
+			std::unique_ptr<funk>  group(new funk);
 			group -> state = type::multiply;
 
-			group -> mul.push_back(newlog);
-			group -> mul.push_back(b);
+			group -> mul.push_back(std::move(newlog));
+			group -> mul.push_back(std::move(b));
 
 			return *group;	
 			break;
@@ -1453,7 +1455,7 @@ funk derivehandle(funk curr, char c){
 }
 
 funk derive(funk curr, char c){
-	funk * ret = new funk;
+  std::unique_ptr<funk> ret(new funk);
 	*ret = derivehandle(curr, c);
 	ret -> intoReady();
 	return *ret;
@@ -1465,27 +1467,27 @@ funk table( funk curr, char x){
 	if (curr.state == type::variable){
 		int expo2 = curr.expo + 1;
 		
-		funk * one = new funk;
+		std::unique_ptr<funk> one(new funk);
 		one -> state = type::scalar;
 		one -> sca = 1;
 
-		funk * under = new funk;
+		std::unique_ptr<funk> under(new funk);
 		under -> state = type::scalar;
 		under -> sca = expo2;
 
-		funk * coeff = new funk;
+		std::unique_ptr<funk> coeff(new funk);
 		coeff -> state = type::divide;
-		coeff -> num = one;
-		coeff -> den = under;
+		coeff -> num = std::move(one);
+		coeff -> den = std::move(under);
 
-		funk * curr2 = new funk;
+		std::unique_ptr<funk> curr2(new funk);
 		* curr2 = curr;
 		curr2 -> expo = expo2;
 		
-		funk * vot = new funk;
+		std::unique_ptr<funk> vot(new funk);
 		vot -> state = type::multiply;
-		vot -> mul.push_back(curr2);
-		vot -> mul.push_back(coeff);
+		vot -> mul.push_back(std::move(curr2));
+		vot -> mul.push_back(std::move(coeff));
 
 		return *vot;
 	}if (curr.state == type::divide){
@@ -1493,37 +1495,37 @@ funk table( funk curr, char x){
 			if (curr.den -> expo > 1){ 
 				int expo2 = curr.den -> expo - 1;
 
-				funk * one = new funk;
+				std::unique_ptr<funk> one(new funk);
 				one -> state = type::scalar;
 				one -> sca = -1;
 
-				funk * under = new funk;
+				std::unique_ptr<funk> under(new funk);
 				under -> state = type::scalar;
 				under -> sca = expo2;
 
-				funk * coeff = new funk;
+				std::unique_ptr<funk> coeff(new funk);
 				coeff -> state = type::divide;
-				coeff -> num = one;
-				coeff -> den = under;
+				coeff -> num = std::move(one);
+				coeff -> den = std::move(under);
 
-				funk * curr2 = new funk;
+				std::unique_ptr<funk> curr2(new funk);
 				* curr2 = curr;
 				curr2 -> den -> expo = expo2;
 				
-				funk * vot = new funk;
+				std::unique_ptr<funk> vot(new funk);
 				vot -> state = type::multiply;
-				vot -> mul.push_back(curr2);
-				vot -> mul.push_back(coeff);
+				vot -> mul.push_back(std::move(curr2));
+				vot -> mul.push_back(std::move(coeff));
 
 				return *vot;
 			}
 			else{
-				funk * lnin = new funk;
+			  std::unique_ptr<funk> lnin(new funk);
 				*lnin = *curr.den;
 
-				funk * ln = new funk;
+				std::unique_ptr<funk> ln(new funk);
 				ln -> state = type::logarithm;
-				ln -> log = lnin;
+				ln -> log = std::move(lnin);
 
 				return * ln;
 			}
@@ -1579,48 +1581,48 @@ bool hasvar(funk curr, char x){
 
 funk integrate(funk curr, char x){
 	if(!hasvar(curr, x)){
-		funk * plusx = new funk;
+	  std::unique_ptr<funk> plusx(new funk);
 		plusx -> state = type::multiply;
 
-		funk * xp = new funk;
+		std::unique_ptr<funk> xp(new funk);
 		xp -> state = type::variable;
 		xp -> var = x; 
 
-		funk * curry = new funk;
+		std::unique_ptr<funk> curry(new funk);
 		* curry = curr;
 
-		plusx -> mul.push_back(curry);
-		plusx -> mul.push_back(xp);
+		plusx -> mul.push_back(std::move(curry));
+		plusx -> mul.push_back(std::move(xp));
 
 		return *plusx;
 	}
 	if(curr.state == type::addition){
-		funk * newf = new funk;
+	  std::unique_ptr<funk> newf(new funk);
 		newf -> state = type::addition;
 		for ( int i = 0; i <  curr.add.size(); i++){
-			funk * vot = new funk;
+		  std::unique_ptr<funk> vot(new funk);
 			*vot = integrate (*curr.add[i], x);
-			newf -> add.push_back(vot);
+			newf -> add.push_back(std::move(vot));
 		}
 		return *newf;
 	}
 	else if(curr.state == type::multiply && curr.mul.back() -> state == type::scalar){
 		
-		funk * newf = new funk;
+	  std::unique_ptr<funk> newf(new funk);
 		newf -> state = type::multiply;
 		
-		funk * temp = new funk;
-		temp = curr.mul.back();
+		std::unique_ptr<funk> temp(new funk);
+		temp = std::move(curr.mul.back());
 	
 		curr.mul.pop_back();
 		curr.simplify();
 		curr.degOrg();
 
-		funk * vot = new funk;
+		std::unique_ptr<funk> vot(new funk);
 		* vot = integrate(curr, x);
 
-		newf -> mul.push_back(vot);
-		newf -> mul.push_back(temp);
+		newf -> mul.push_back(std::move(vot));
+		newf -> mul.push_back(std::move(temp));
 		return *newf;
 	}
 	//elseif hermite -> rothgar -> risch
@@ -1632,48 +1634,48 @@ funk sqff (funk a, char x){
 	
 	int i = 1;
 	
-	funk * one = new funk;
+	std::unique_ptr<funk> one(new funk);
 	one -> state = type::scalar;
 	one -> sca = 1;
 	
-	funk * output = new funk;
+	std::unique_ptr<funk> output(new funk);
 	output -> state = type::multiply;
-	output -> mul.push_back(one);
+	output -> mul.push_back(std::move(one));
 
 	funk b = derive(a, x);
 
-	funk * c = new funk;
+	std::unique_ptr<funk> c(new funk);
 	*c =  GCD(a, b);
 	
 	return *c;
-	funk * acopy = new funk;
+	std::unique_ptr<funk> acopy(new funk);
 	*acopy = a;
 
-	funk * w = new funk;
+	std::unique_ptr<funk> w(new funk);
 	w -> state = type::divide;
-	w -> num = acopy;
-	w -> den = c;
+	w -> num.reset(new funk(a));
+	w -> den = std::move(c);
 
 
-	funk * y = new funk;
-	funk * z = new funk;
+	std::unique_ptr<funk> y(new funk);
+	std::unique_ptr<funk> z(new funk);
 
 	while (!(c -> state == type::scalar && (c -> sca == 1))){
 		*y = GCD(*w, *c);
 		*z = *w / *y;
 		
 		z -> expo = i;
-		output -> mul.push_back(z); 
+		output -> mul.push_back(std::move(z)); 
 		i++;
 		
 		*w = *y;
-		funk * ccopy = new funk;
+		std::unique_ptr<funk> ccopy(new funk);
 		*ccopy = *c;
 		*c = *c / *y;
 	} 
 
 	w -> expo = i;
-	output -> mul.push_back(w);
+	output -> mul.push_back(std::move(w));
 	
 	return *output;
 }
@@ -1684,38 +1686,38 @@ funk rothtrag( funk a, funk b, char x){
 	funk R = a;
 	int k = R.add.size();
 	
-	funk * c = new funk;
+	std::unique_ptr<funk> c(new funk);
 	c -> state = type::addition;
 
-	funk * v = new funk;
+	std::unique_ptr<funk> v(new funk);
 	v -> state = type::addition;
 	
-	funk * integral = new funk;
+	std::unique_ptr<funk> integral(new funk);
 	integral -> state = type::addition;
 	
-	funk * logpart = new funk;
+	std::unique_ptr<funk> logpart(new funk);
 	logpart -> state = type::logarithm;
 
 	if (R.den -> expo > R.num -> expo){
-		funk * integral = new funk;
+	  std::unique_ptr<funk> integral(new funk);
 		integral -> state = type::addition;
 		
 		for (int i = 0; i < k; i++){
 			int d = R.expo; 
 			if (d == 1){
 				c -> simplify();
-				integral -> add.push_back(logpart);
+				integral -> add.push_back(std::move(logpart));
 			}
 			else if (d == 2){
 			 	c -> simplify();
 				for (int n = 1; n < 2; n++){
-					logpart -> log = c;
-					integral -> add.push_back(logpart);
+				  logpart -> log = std::move(c);
+				  integral -> add.push_back(std::move(logpart));
 				}
 			}else{
 				for (int n = 1; n < d; n++){
-					logpart -> log = c;
-					integral -> add.push_back(logpart);
+				  logpart -> log = std::move(c);
+				  integral -> add.push_back(std::move(logpart));
 				}
 			}
 		}
@@ -1755,7 +1757,7 @@ funk horowitz(){
 		c -> add.push_back(m);
 	}
 	
-	funk * r = new funk;
+	std::unique_ptr<funk> r = new funk;
 	r -> state = type::addition;
 	r -> add.at(c);
 	r -> add.at(b);
@@ -1767,17 +1769,17 @@ funk horowitz(){
 		//solve for these euations
 	}
 	
-	funk * front = new funk;
+	std::unique_ptr<funk> front = new funk;
 	front -> state = type::divide;
 	num = c;
 	den = d;
 
-	funk * back = new funk;
+	std::unique_ptr<funk> back = new funk;
 	back -> state = type::divide;
 	num = a;
 	den = b;	
 
-	funk * sender = new funk;
+	std::unique_ptr<funk> sender = new funk;
 	front -> state = type::addition;
 
 	sender ->  add.push_back(front);
@@ -1863,7 +1865,7 @@ funk integrate(funk curr, char x){
 	finished -> state = type::addition;
 	if (curr.state == type::addition){
 		for (int i = 0; i < curr.add.size(); i++){
-			funk * ipart = new funk;
+			std::unique_ptr<funk> ipart = new funk;
 			*ipart = integrate(*(curr.add[i]), x);	
 			finished -> add.push_back(ipart);
 		}
@@ -1897,51 +1899,51 @@ int ignore_parens(int i, string str){
 	else return i+1;
 }
 
-funk * F2M(funk *curr);
+std::unique_ptr<funk> F2M(std::unique_ptr<funk>curr);
 
-funk * P2F(funk *curr){
+std::unique_ptr<funk> P2F(std::unique_ptr<funk>curr){
 	curr -> pstring = curr -> pstring.substr(1, (curr -> pstring.size())-2);
-	return F2M(curr);
+	return F2M(std::move(curr));
 }
 
-funk * X2C(funk *curr){	
+std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){	
 	if (curr -> pstring.at(0) == '('){
-		return P2F(curr);
+	  return P2F(std::move(curr));
 	}
 	
 	if (curr -> pstring.size() > 2){
 		if (curr -> pstring.compare(0,3, "cos") == 0){
-			funk *temp = new funk;
+		  std::unique_ptr<funk>temp(new funk);
 			 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> cos = P2F(temp);
+			curr -> cos = P2F(std::move(temp));
 			curr -> state = type::cosine;
 			curr -> pstring.clear();
 			return curr;
 		}
 		if (curr -> pstring.compare(0,3, "sin") == 0){
-			funk *temp = new funk;
+		  std::unique_ptr<funk>temp(new funk);
 			
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> sin = P2F(temp);
+			curr -> sin = P2F(std::move(temp));
 			curr -> state = type::sine;
 			curr -> pstring.clear();
 			return curr;
 		}
 		if (curr -> pstring.compare(0,3, "log") == 0){
-			funk *temp = new funk;
+		  std::unique_ptr<funk>temp(new funk);
 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> log = P2F(temp);
+			curr -> log = P2F(std::move(temp));
 			curr -> state = type::logarithm;
 			curr -> pstring.clear();
 			return curr;
 		}
 		if (curr -> pstring.compare(0,3, "exp") == 0){
-			funk *temp = new funk;
+		  std::unique_ptr<funk>temp(new funk);
 			 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> exp = P2F(temp);
+			curr -> exp = P2F(std::move(temp));
 			curr -> state = type::exponential;
 			curr -> pstring.clear();
 			return curr;
@@ -1958,33 +1960,33 @@ funk * X2C(funk *curr){
 	return curr;
 }
 
-funk * E2X(funk *curr){
+auto E2X(std::unique_ptr<funk> curr){
 	for (int i = 0; i < curr -> pstring.size(); i++){	
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '^'){
 			curr -> expo = stoi( curr -> pstring.substr(i+1, string::npos ));
 			curr -> pstring = curr ->pstring.substr (0, i);
-			return X2C(curr);
+			return X2C(std::move(curr));
 		}
 	}
 
-	return X2C(curr);
+	return X2C(std::move(curr));
 }
 
-funk * M2E(funk *curr){
+std::unique_ptr<funk> M2E(std::unique_ptr<funk> curr){
 	for (int i = 0; i < curr -> pstring.size(); i++){
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '*'){
-			funk *lh = new funk;				
-			funk *rh = new funk;
+		  auto lh = std::unique_ptr<funk>(new funk);				
+		  auto rh = std::unique_ptr<funk>(new funk);
 
 			lh -> pstring = curr -> pstring.substr (0, i);
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> mul.push_back(E2X(lh));
-			curr -> mul.push_back(M2E(rh));
+			curr -> mul.push_back(E2X(std::move(lh)));
+			curr -> mul.push_back(M2E(std::move(rh)));
 
 			curr -> state = type::multiply;
 			curr -> pstring.clear();
@@ -1992,14 +1994,14 @@ funk * M2E(funk *curr){
 			return curr;
 		}
 		if (curr -> pstring.at(i) == '/'){
-			funk *lh = new funk;				
-			funk *rh = new funk;
+		  std::unique_ptr<funk> lh(new funk);				
+		  std::unique_ptr<funk> rh(new funk);
 
 			lh -> pstring = curr -> pstring.substr (0, i);
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> num = E2X(lh);
-			curr -> den = M2E(rh);
+			curr -> num = E2X(std::move(lh));
+			curr -> den = M2E(std::move(rh));
 
 			curr -> state = type::divide;
 			curr -> pstring.clear();
@@ -2007,22 +2009,22 @@ funk * M2E(funk *curr){
 			return curr;
 		}
 	}
-	return E2X(curr);
+	return E2X(std::move(curr));
 }
 
-funk * F2M(funk *curr){
+std::unique_ptr<funk> F2M(std::unique_ptr<funk> curr){
 	for (int i = 0; i < curr -> pstring.size(); i++){
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '+'){
-			funk *lh = new funk;				
-			funk *rh = new funk;
+		  std::unique_ptr<funk> lh(new funk);				
+		  std::unique_ptr<funk> rh(new funk);
 
 			lh -> pstring = curr -> pstring.substr (0, (i));
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> add.push_back(M2E(lh));
-			curr -> add.push_back(F2M(rh));
+			curr -> add.push_back(M2E(std::move(lh)));
+			curr -> add.push_back(F2M(std::move(rh)));
 
 			curr -> state = type::addition;
 			curr -> pstring.clear();
@@ -2030,14 +2032,14 @@ funk * F2M(funk *curr){
 			return curr;
 		}
 	}
-	return M2E(curr);
+	return M2E(std::move(curr));
 }
 
-funk * string_to_funk(string in){
-	funk *start = new funk;	
+std::unique_ptr<funk> string_to_funk(string in){
+  std::unique_ptr<funk> start(new funk);	
 	in.erase(std::remove(in.begin(),in.end(),' '),in.end());
 	start -> pstring = in;
-	start = F2M(start);
+	start = F2M(std::move(start));
 	return start; 
 }
 

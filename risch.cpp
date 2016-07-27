@@ -159,8 +159,8 @@ funk& funk::operator=(const funk& obj){
 	  this->state = obj.state;
 	  this->coef = obj.coef;
 	  this->expo = obj.expo;
-	  this->nodeA.reset(new funk(*obj.nodeA));
-	  this->nodeB.reset(new funk(*obj.nodeB));
+	  this->nodeA->reset(new funk(*obj.nodeA));
+	  this->nodeB->reset(new funk(*obj.nodeB));
 	}
 	return *this;
 }
@@ -873,32 +873,28 @@ void funk::intoReady(){
 	degOrg();
 }
 */
-funk& funk::operator+(const funk& obj){
+funk funk::operator+(const funk& obj){ //Might need to return a reference
 	funk ret;				
 	ret.state = type::addition;
 	
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeB.reset(new funk(obj));
 	//ret->simplify();
-	
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+        			
+	return ret;
 }
 
-funk& funk::operator*(const funk& obj){
+funk funk::operator*(const funk& obj){
 	funk ret;
 	ret.state = type::multiply;
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeA.reset(new funk(obj));
 
 	//ret -> simplify();
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+	return ret;
 }
 
-funk& funk::operator/(const funk& obj){
+funk funk::operator/(const funk& obj){
   // std::unique_ptr<funk> objcopy(new funk);
   // 	* objcopy = obj;
   // 	std::unique_ptr<funk> thiscopy(new funk);
@@ -910,9 +906,8 @@ funk& funk::operator/(const funk& obj){
 	ret.nodeB.reset(new funk(obj));
 	
 	//	ret.simplify();
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+	
+	return ret;
 }
 /*
 funk fcoeff(funk curr, char c ){

@@ -18,27 +18,14 @@ funk::funk(const funk &obj){
 	
 
 	state = obj.state;
-	var = obj.var;
-	sca = obj.sca;
+	coef = obj.coef;
 	expo = obj.expo;
 	
-	for (int i = 0; i < obj.add.size(); i++){
-	  add.push_back(std::unique_ptr<funk>(new funk(*obj.add[i])));
-	}
-	for (int i = 0; i < obj.mul.size(); i++){
-	  mul.push_back(std::unique_ptr<funk>(new funk(*obj.mul[i])));
-	}
-	
-	num = obj.num ? std::unique_ptr<funk>(new funk(*obj.num)) : std::unique_ptr<funk>(nullptr);
-	den = obj.den ? std::unique_ptr<funk>(new funk(*obj.den)) : std::unique_ptr<funk>(nullptr);
-	sin = obj.sin ? std::unique_ptr<funk>(new funk(*obj.sin)) : std::unique_ptr<funk>(nullptr); 
-	cos = obj.cos ? std::unique_ptr<funk>(new funk(*obj.cos)) : std::unique_ptr<funk>(nullptr); 
-	log = obj.log ? std::unique_ptr<funk>(new funk(*obj.log)) : std::unique_ptr<funk>(nullptr); 
-	exp = obj.exp ? std::unique_ptr<funk>(new funk(*obj.exp)) : std::unique_ptr<funk>(nullptr); 
+	nodeA = obj.nodeA ? std::unique_ptr<funk>(new funk(*obj.nodeA)) : std::unique_ptr<funk>(nullptr);
+	nodeB = obj.nodeB ? std::unique_ptr<funk>(new funk(*obj.nodeB)) : std::unique_ptr<funk>(nullptr);
 }
-
+/*
 funk::~funk(void){
-  /*
 	switch (state)
 	{
 		case type::addition:			
@@ -73,7 +60,7 @@ funk::~funk(void){
 		default:
 					break;
 	
-					}*/
+					}
 }
 
 int compareM(funk a){
@@ -158,10 +145,8 @@ void funk::reduce(){
 					break;
 		default: return;
 	}
-/*
 	*this = std::move(*temp);
 	delete temp;
-*/
 
 	type tempstate = temp -> state;	
 	var = temp -> var;
@@ -351,6 +336,7 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 			break;
 	}
 }
+*/
 
 void funk::print(){
 
@@ -411,7 +397,7 @@ void funk::print(){
 }
 
 //just so you're aware, rem(a, b) is (a % b) ?
-
+/*
 void funk::supersimplify(){
 	//print();
 	//cout << "but I could never" << endl;
@@ -545,9 +531,9 @@ void funk::simplify(){
 									scaful -> sca = mul.at(i) -> sca;
 
 									std::swap(mul.at(0), mul.at(i));
-									/*temp = mul.at(0);
+									temp = mul.at(0);
 									mul.at(0) = scaful;
-									mul.at(i) = temp;*/
+									mul.at(i) = temp;
 								
 								}
 								scabegin = 0;
@@ -585,9 +571,9 @@ void funk::simplify(){
 									if (mul.at(i) -> var >  mul.at(j) -> var){
 									  //std::unique_ptr<funk> temp;
 										std::swap(mul.at(j), mul.at(i));
-										/*temp = mul.at(j);
+										temp = mul.at(j);
 										mul.at(j) = mul.at(i);
-										mul.at(i) = temp;*/
+										mul.at(i) = temp;
 										i = 0;
 									}
 								}
@@ -708,7 +694,6 @@ void funk::simplify(){
 						}	
 					}
 
-					/*
 					for (int i = 0; i < mul.size(); i++){
 						if (mul[i] -> state == type::divide){
 							std::unique_ptr<funk> temp = new funk;
@@ -724,7 +709,6 @@ void funk::simplify(){
 							mul[i] -> num = temp;
 						}
 					}
-					*/
 					if (mul.size() == 1 ){
 						reduce();
 					}
@@ -911,20 +895,11 @@ void funk::degOrg(){
 				if (compareA(*add[i]) == compareA(*add[j])){
 					if (degCompare(add[j], add[i])){
 					  std::swap(add[i], add[j]);
-					  /*
-						std::unique_ptr<funk> temp;
-						temp = add[i];
-						add[i] = add[j];
-						add[j] = temp;*/
-					}
+					  					}
 				}else if (compareA(*add[j]) > compareA(*add[i])){
 
 				  std::swap(add[i], add[j]);
-				  /*std::unique_ptr<funk> temp;
-					temp = add[i];
-					add[i] = add[j];
-					add[j] = temp;*/
-				}
+				 }
 			}
 		}
 
@@ -937,18 +912,9 @@ void funk::degOrg(){
 				if (compareA(*mul[i]) == compareA(*mul[j])){
 					if (degCompare(mul[j], mul[i])){
 					  std::swap(mul[j], mul[i]);
-					  /*
-						std::unique_ptr<funk> temp;
-						temp = mul[i];
-						mul[i] = mul[j];
-						mul[j] = temp;	*/
-					}
+					  					}
 				}else if (compareA(*mul[j]) > compareA(*mul[i])){
 				  std::swap(mul[j], mul[i]);
-				  /*	std::unique_ptr<funk> temp;
-					temp = mul[i];
-					mul[i] = mul[j];
-					mul[j] = temp;*/
 				}
 			}
 		}
@@ -962,7 +928,7 @@ void funk::intoReady(){
 	simplify();
 	degOrg();
 }
-
+*/
 funk& funk::operator+(const funk& obj){
   std::unique_ptr<funk> objcopy(new funk);
 	* objcopy = obj;
@@ -1013,7 +979,7 @@ funk& funk::operator/(const funk& obj){
 	return *ret;
 }
 
-
+/*
 funk fcoeff(funk curr, char c ){
 	if (curr.state == type::multiply){
 		int check = -1;
@@ -1132,7 +1098,7 @@ void funk::pp(){
 //Interpolation" -by Vo Ngoc Thieu (<3 Hubbubble)
 
 pair <funk, funk> pdiv( funk a, funk b){
-	/*
+	
 	if (b.state == type::scalar && b.sca == 1){	
 		std::unique_ptr<funk> zip = new funk;
 		zip -> state = type::scalar;
@@ -1140,7 +1106,7 @@ pair <funk, funk> pdiv( funk a, funk b){
 
 		return make_pair(a, *zip);	
 	}
-	*/
+	
 	funk p;
 	std::unique_ptr<funk> r(new funk);
 	r -> state = type::scalar;
@@ -1792,7 +1758,6 @@ funk horowitz(){
 	
 	return(sender);
 }
-*/
 pair <funk, funk> solve(funk a, funk b, funk c ){
 	//create variable matrix
 	int n = a.deg();
@@ -1813,7 +1778,6 @@ pair <funk, funk> solve(funk a, funk b, funk c ){
 funk hermite(funk p, funk q, char x){
 	//determine the polynomial part of an integral, rational part and integral part, and send them packing
 	
-/*
 	s(x^2 + 3x + 2) + t(3x + 6) = 9x + 10
 
 
@@ -1821,10 +1785,8 @@ funk hermite(funk p, funk q, char x){
 	|3 1 : 6 3 0| |s1| 	| 9|
 	|2 3 : 0 6 3|x|t0| = 	| 0|
 	|0 2 : 0 0 6| |t1|	| 0|
-*/
 
 	//partial fraction decomposition
-/*
 	funk* total = new funk;
 	total -> state = type::addition;
 
@@ -1856,10 +1818,8 @@ funk hermite(funk p, funk q, char x){
 		total -> add.push_back(integrate(intpart));
 		return total;
 	}
-*/
 }
 
-/*
 funk integrate(funk curr, char x){
 	funk* finished = new funk;
 	finished -> state = type::addition;
@@ -1886,7 +1846,6 @@ bool isOnlyDouble(const char* str) //code by Chris on SO (thanks, <3 Hubbubble)
         return false;
     return true;
 }
-
 
 int ignore_parens(int i, string str){
 	int pcounter = 1;
@@ -1916,7 +1875,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 		  std::unique_ptr<funk>temp(new funk);
 			 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> cos = P2F(std::move(temp));
+			curr -> nodeA = P2F(std::move(temp));
 			curr -> state = type::cosine;
 			curr -> pstring.clear();
 			return curr;
@@ -1925,7 +1884,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 		  std::unique_ptr<funk>temp(new funk);
 			
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> sin = P2F(std::move(temp));
+			curr -> nodeA = P2F(std::move(temp));
 			curr -> state = type::sine;
 			curr -> pstring.clear();
 			return curr;
@@ -1934,7 +1893,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 		  std::unique_ptr<funk>temp(new funk);
 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> log = P2F(std::move(temp));
+			curr -> nodeA = P2F(std::move(temp));
 			curr -> state = type::logarithm;
 			curr -> pstring.clear();
 			return curr;
@@ -1943,18 +1902,17 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 		  std::unique_ptr<funk>temp(new funk);
 			 
 			temp -> pstring = curr -> pstring.substr(3, string::npos);
-			curr -> exp = P2F(std::move(temp));
+			curr -> nodeA = P2F(std::move(temp));
 			curr -> state = type::exponential;
 			curr -> pstring.clear();
 			return curr;
 		}	
 	}
 	if (isOnlyDouble(curr -> pstring.c_str())){
-		curr -> sca = stod(curr -> pstring);
-		curr -> state = type::scalar;
+		curr -> coef = stod(curr -> pstring);
+		curr -> state = type::base;
 	}else{
-		curr -> var = curr -> pstring.at(0);
-		curr -> state = type::variable;	
+		curr -> state = type::base;	
 	} 
 	curr -> pstring.clear();
 	return curr;
@@ -1966,7 +1924,7 @@ auto E2X(std::unique_ptr<funk> curr){
 
 		if (curr -> pstring.at(i) == '^'){
 			curr -> expo = stoi( curr -> pstring.substr(i+1, string::npos ));
-			curr -> pstring = curr ->pstring.substr (0, i);
+			curr -> pstring = curr -> pstring.substr (0, i);
 			return X2C(std::move(curr));
 		}
 	}
@@ -1985,8 +1943,8 @@ std::unique_ptr<funk> M2E(std::unique_ptr<funk> curr){
 			lh -> pstring = curr -> pstring.substr (0, i);
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> mul.push_back(E2X(std::move(lh)));
-			curr -> mul.push_back(M2E(std::move(rh)));
+			curr -> nodeA = E2X(std::move(lh));
+			curr -> nodeB = M2E(std::move(rh));
 
 			curr -> state = type::multiply;
 			curr -> pstring.clear();
@@ -2000,8 +1958,8 @@ std::unique_ptr<funk> M2E(std::unique_ptr<funk> curr){
 			lh -> pstring = curr -> pstring.substr (0, i);
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> num = E2X(std::move(lh));
-			curr -> den = M2E(std::move(rh));
+			curr -> nodeA = E2X(std::move(lh));
+			curr -> nodeB = M2E(std::move(rh));
 
 			curr -> state = type::divide;
 			curr -> pstring.clear();
@@ -2023,8 +1981,8 @@ std::unique_ptr<funk> F2M(std::unique_ptr<funk> curr){
 			lh -> pstring = curr -> pstring.substr (0, (i));
 			rh -> pstring = curr -> pstring.substr (i+1, string::npos );	
 			
-			curr -> add.push_back(M2E(std::move(lh)));
-			curr -> add.push_back(F2M(std::move(rh)));
+			curr -> nodeA = M2E(std::move(lh));
+			curr -> nodeB = F2M(std::move(rh));
 
 			curr -> state = type::addition;
 			curr -> pstring.clear();

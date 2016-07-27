@@ -16,7 +16,7 @@ class funk{
 
 	funk();
 	funk(const funk &obj);
-	//funk(funk&& obj);	
+	funk(funk&& obj);	
 
 	//~funk();
 
@@ -30,7 +30,6 @@ class funk{
 
 	//need some way to incoroprate functions like sin, cos, tan.
 	//need some way to find neccisary functions...
-
 
 	
 	void reduce();

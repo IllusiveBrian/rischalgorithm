@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <utility>
 
-enum class type { broken, variable, scalar, addition, multiply, divide, cosine, sine, logarithm, exponential};
+enum class type { broken, base, addition, multiply, divide, cosine, sine, logarithm, exponential};
 
 class funk{
  public:
@@ -53,19 +53,15 @@ class funk{
 	std::string pstring;
 
 	type state;
-	char var;
-	int sca;
+	int coef;
 	int expo;	
 
-	std::vector <std::unique_ptr<funk>> add;
-	std::vector <std::unique_ptr<funk>> mul;
-	std::unique_ptr<funk> num;
-	std::unique_ptr<funk> den;
-
-	std::unique_ptr<funk> sin;
-	std::unique_ptr<funk> cos;
-	std::unique_ptr<funk> log;
-	std::unique_ptr<funk> exp;
+	std::unique_ptr<funk> nodeA;
+	std::unique_ptr<funk> nodeB;
+	
+	//divide numer A / denom B
+	//sinngle nodes go to A
+	
 };
 
 std::unique_ptr<funk> string_to_funk(std::string);

@@ -17,6 +17,15 @@ int main(){
 	curr2 -> print();
 	std::cout << std::endl;	
 
+	std::cout << "Organgizing...";
+	
+	std::cout << std::endl;
+	curr1 -> simplify();
+	curr1 -> print();
+	std::cout << std::endl;
+	curr1 -> simplify();
+	curr2 -> print();
+
 	//simplify into one function?
 	//curr1 -> simplify();
 	//curr1 -> degOrg();

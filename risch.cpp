@@ -344,7 +344,7 @@ int compare(funk a){
 			return 2;
 			break;
 		case type::base:
-			return 1;
+			return 9;
 			break;
 	}
 }

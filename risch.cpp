@@ -105,8 +105,13 @@ void funk::replaceWith(const funk& obj){
   this->state = obj.state;
   this->coef = obj.coef;
   this->expo = obj.expo;
-  this->nodeA->reset(new funk(*obj.nodeA));
-  this->nodeB->reset(new funk(*obj.nodeB));
+  this->nodeA.reset(new funk(*obj.nodeA));
+  this->nodeB.reset(new funk(*obj.nodeB));
+}
+
+void funk::replaceWith(const std::unique_ptr<funk>& obj)
+{
+  this->replaceWith(*obj);
 }
 
 /*
@@ -297,6 +302,49 @@ funk& funk::operator+(const funk& obj){
 	return *tet;
 }
 
+bool funk::isConstant()
+{
+  return expo == 0 || coef == 0;
+}
+
+void funk::breakExpo(){
+  if (this->expo > 1){
+    unique_ptr<funk> tempMult, tempRepA(new funk(*this)), tempRepB(new funk(*this));
+    tempMult->state = type::multiply;
+    tempMult->expo = 1;
+    tempMult->coef = 1;
+    
+    tempRepA->expo = 1;
+    tempRepB->expo = this->expo - 1;
+    tempMult->nodeA = std::move(tempRepA);
+    tempMult->nodeB = std::move(tempRepB);
+    this->replaceWith(*tempMult);
+    this->nodeB->breakExpo();
+  }
+}
+
+void funk::evaluateCoef(int updatedCoef, std::unique_ptr<funk>& nodeToCopy)
+{
+  this->coef = updatedCoef;
+  this->expo = nodeToCopy->expo;
+  this->state = nodeToCopy->state;
+  unique_ptr<funk> tempA = std::move(nodeToCopy->nodeA), tempB = std::move(nodeToCopy->nodeB);//I don't know whether nodeToCopy is nodeA or nodeB, so I need to do this before invalidating it in the next two lines
+  this->nodeA = std::move(tempA);
+  this->nodeB = std::move(tempB);
+}
+
+void funk::multiplyDivisions()
+{
+  unique_ptr<funk> toswitch;
+  toswitch->state = type::divide;
+  toswitch->coef = this->nodeA->coef * this->nodeB->coef;
+  toswitch->expo = 1;
+  toswitch->nodeA.reset(new funk(*(this->nodeA->nodeA) * *(this->nodeB->nodeA)));
+  toswitch->nodeB.reset(new funk(*(this->nodeA->nodeB) * *(this->nodeB->nodeB)));
+  this->replaceWith(toswitch);
+  this->simplify();
+}
+
 void funk::setBase()
 {
   this->state = type::base;
@@ -310,15 +358,11 @@ void funk::simplifyAddition()
   if(nodeA->coef == 0){
     this->replaceWith(nodeB);
   }
-  if (nodeB->coef == 0){
+  else if (nodeB->coef == 0){
     this->replaceWith(nodeA);
   }
-  if (nodeA->compareWithoutCoef(*nodeB)){
-    this->coef = nodeA->coef + nodeB->coef;
-    this->expo = nodeA->expo;
-    this->state = nodeA->state;
-    this->nodeA = std::move(nodeB->nodeA);
-    this->nodeB = std::move(nodeB->nodeB);
+  else if (nodeA->compareWithoutCoef(*nodeB)){
+    evaluateCoef(nodeA->coef + nodeB->coef, nodeB);
   }
   
 }
@@ -372,12 +416,35 @@ void funk::simplifyDivide()
       std::unique_ptr<funk>temp(new funk);
     }
     if(nodeB -> state != type::divide){
-
     }
-  } 
+}
+
+void funk::simplifyMulitiplication()
+{
+  bool nodeAConst = nodeA->isConstant(), nodeBConst = nodeB->isConstant(),
+    nodeADiv = nodeA->state == type::divide, nodeBDiv = nodeB->state == type::divide,
+    nodeAAdd = nodeA->state == type::addition, nodeBAdd = nodeB->state == type::addition;
+  if (nodeADiv || nodeBDiv){
+    if (nodeADiv && nodeBDiv){
+      multiplyDivisions();
+    }
+  }
   
+  if (nodeAConst){
+    evaluateCoef(nodeA->coef * nodeB->coef, nodeB);
+  }
+  else if (nodeBConst){
+    evaluateCoef(nodeA->coef * nodeB->coef, nodeA); 
+  }
+  else if (false){
+  }
+    
+}
+
+void funk::simplifyDivision(){
 
 }
+
 int compare(funk a){
 	switch(a.state){
 		case type::addition:
@@ -419,26 +486,41 @@ void funk::organize(){
 }
 	
 void funk::simplify(){
-  if (coef == 0 || expo == 0)
+  if (nodeA){
+    nodeA->simplify();
+  }
+  if (nodeB){
+    nodeB->simplify();
+  }
+  if (isConstant())
   {
     setBase();
     return;
   }
-  else{
-    nodeA->simplify();
-    nodeB->simplify();
-  }
   switch (state){
   case type::base: return;
   case type::addition:
+    breakExpo();
     simplifyAddition();
-  case type::divide: 
+    break;
+  case type::multiply:
+    breakExpo();
+    simplifyMulitiplication();
+    break;
+  case type::divide:
+    breakExpo();
+    simplifyDivision();
+    break;
       
-	this -> organize();
+    this -> organize();
+}
+
+bool funk::compareMathEquiv(const funk& obj){
+  return *this == obj || (this->coef == 0 && obj.coef == 0) || (this->coef == obj.coef && this->expo == 0 && obj.expo == 0);
 }
 
 bool funk::statesAndNodesEqual(const funk& obj){
-  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->node);
+  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->nodeB == this->nodeB);
 }
 
 bool funk::compareWithoutCoef(const funk& obj){

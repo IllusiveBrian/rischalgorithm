@@ -392,8 +392,12 @@ void funk::supersimplify(){
 		}
 	}
 }
-
+*/
 void funk::simplify(){
+  
+}
+
+  /*
 	if (expo == 0) {
 
 	}
@@ -873,6 +877,19 @@ void funk::intoReady(){
 	degOrg();
 }
 */
+
+bool funk::statesAndNodesEqual(const funk& obj){
+  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->node);
+}
+
+bool funk::compareWithoutCoef(const funk& obj){
+  return this->expo == obj.expo && statesAndNodesEqual(obj);
+}
+
+bool funk::operator==(const funk& obj){
+    return this->coef == obj.coef && compareWithoutCoef(obj);
+}
+
 funk funk::operator+(const funk& obj){ //Might need to return a reference
 	funk ret;				
 	ret.state = type::addition;

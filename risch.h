@@ -20,19 +20,23 @@ class funk{
 
 	//~funk();
 
-	funk& operator=(const funk& obj);
+	funk& operator=(const funk& obj)
 	//funk& operator=(const funk&& obj);
 
-	//operators needed:
 	funk& operator+(const funk& obj);	
 	funk& operator*(const funk& obj);
 	funk& operator/(const funk& obj);	
 
+	bool operator==(const funk& obj);
+	bool statesAndNodesEqual(const funk& obj);
+	bool compareWithoutCoef(const funk& obj);
 	//need some way to incoroprate functions like sin, cos, tan.
 	//need some way to find neccisary functions...
 
 	
 	void reduce();
+
+	
 	
 	int deg();
 	int coeff();

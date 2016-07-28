@@ -323,22 +323,60 @@ void funk::simplifyAddition()
   
 }
 
-void funk::simplifyAddition()
+void funk::simplifyDivide()
 {
   if(nodeA->coef == 0){
-    this->replaceWith(nodeB);
+    this->replaceWith(nodeA);
+    return;
   }
   if (nodeB->coef == 0){
+    //an error has occured
+  }
+  if (nodeB -> coef == (funk one(1)){
     this->replaceWith(nodeA);
+    return;
+  } 
+  if (nodeA->statesAndNodesEqual(*nodeB)){
+    int div = iGCD(nodeA->coef, nodeB->coef);
+    nodeA->coef = nodeA->coef / div;
+    nodeB->coef = nodeB->coef / div;
+
+    if (nodeA->expo < nodeB->expo) nodeB -> expo -= node->A; nodeA -> expo = 0;
+    else nodeA -> expo -= node->B; nodeB -> expo = 0;
   }
-  if (nodeA->compareWithoutCoef(*nodeB)){
-    this->coef = nodeA->coef + nodeB->coef;
-    this->expo = nodeA->expo;
-    this->state = nodeA->state;
-    this->nodeA = std::move(nodeB->nodeA);
-    this->nodeB = std::move(nodeB->nodeB);
+  if (nodeA->state == addition){
+    std::unique_ptr<funk>temp(new funk);
+    temp->state = type::addition;
+    std::unique_ptr<funk>div1(new funk);
+    div1->state = type::divide;
+    std::unique_ptr<funk>div2(new funk);
+    div2->state = type::divide;
+
+    div1-> *nodeA = nodeA -> *nodeA; 
+    div1-> *nodeB = *nodeB;
+
+    div2-> *nodeA = nodeA -> *nodeB;
+    div2 -> *nodeB = *nodeB;
+
+    temp -> nodeA = div1;
+    temp -> nodeB = div2;
+      
+    this->replaceWith(temp);
   }
+  if (nodeA -> state == type::divide || nodeB -> state == type::divide){
+    if(nodeA -> state != type::divide)}
+      std::unique_ptr<funk>temp(new funk);
+      temp -> state = divide;
+      temp -> nodeA = nodeA;
+      
+      std::unique_ptr<funk>temp(new funk);
+    }
+    if(nodeB -> state != type::divide){
+
+    }
+  } 
   
+
 }
 int compare(funk a){
 	switch(a.state){
@@ -512,7 +550,7 @@ bool aDevidesb( funk a, funk b){
 	}
 	return true;
 }
-
+*/
 int iGCD(int a, int b){
 	//integer GCD
 	
@@ -527,7 +565,7 @@ int iGCD(int a, int b){
 	}
 	return abs(c);
 }
-
+/*
 int funk::cont(){
 	if (add.size() < 1) return 0;
 	else if (add.size() < 2) return lcoeff();

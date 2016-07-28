@@ -15,6 +15,7 @@ class funk{
  public:
 
 	funk();
+	funk(int i);
 	funk(const funk &obj);
 	funk(funk&& obj);	
 

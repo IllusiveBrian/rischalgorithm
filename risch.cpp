@@ -15,6 +15,12 @@ funk::funk(void){
 	coef = 1;
 }
 
+funk::funk(int i){
+	state = type::broken;
+	expo = 0;
+	coef = i;
+}
+
 funk::funk(const funk &obj){
 	
 	state = obj.state;
@@ -27,10 +33,6 @@ funk::funk(const funk &obj){
 }
 
 /*
-
-
-
-
 
 void funk::reduce(){
 	std::unique_ptr<funk> temp;
@@ -321,8 +323,23 @@ void funk::simplifyAddition()
   
 }
 
-
-<<<<<<< HEAD
+void funk::simplifyAddition()
+{
+  if(nodeA->coef == 0){
+    this->replaceWith(nodeB);
+  }
+  if (nodeB->coef == 0){
+    this->replaceWith(nodeA);
+  }
+  if (nodeA->compareWithoutCoef(*nodeB)){
+    this->coef = nodeA->coef + nodeB->coef;
+    this->expo = nodeA->expo;
+    this->state = nodeA->state;
+    this->nodeA = std::move(nodeB->nodeA);
+    this->nodeB = std::move(nodeB->nodeB);
+  }
+  
+}
 int compare(funk a){
 	switch(a.state){
 		case type::addition:
@@ -362,7 +379,6 @@ void funk::organize(){
 		}
 	}
 }
-
 	
 void funk::simplify(){
   if (coef == 0 || expo == 0)
@@ -378,7 +394,7 @@ void funk::simplify(){
   case type::base: return;
   case type::addition:
     simplifyAddition();
-  
+  case type::divide: 
       
 	this -> organize();
 }
@@ -430,7 +446,6 @@ funk funk::operator/(const funk& obj){
 	//	ret.simplify();
 	
 	return ret;
->>>>>>> 83885457414d6de59de7a85e46e6f121dbf7b470
 }
 
 

@@ -344,59 +344,6 @@ void funk::print(){
 	if (expo > 1) cout << "^" << expo ;
 }
 
-//just so you're aware, rem(a, b) is (a % b) ?
-/*
-void funk::supersimplify(){
-	//print();
-	//cout << "but I could never" << endl;
-	if (state != type::addition) return;
-	
-	for (int i = 0; i < add.size(); i++){
-		if (add[i] -> state == type::variable){
-		  std::unique_ptr<funk> temp = std::unique_ptr<funk>(new funk);
-			temp -> state = type::multiply;
-			std::unique_ptr<funk> one = std::unique_ptr<funk>(new funk);
-			one -> state = type::scalar;
-			one -> sca = 1;
-			
-			temp -> mul.push_back(std::move(one));
-			temp -> mul.push_back(std::move(add[i]));
-		
-			add[i] = std::move(temp);
-		}
-	}
-
-	for (int i = 0; i < add.size(); i++){
-		if (add.at(i) -> state == type::multiply){
-			for (int j = i; j < add.size(); j++){				
-				if (add.at(j) -> state == type::multiply && i != j){
-					bool confirm = true;	
-					for(int y = 0; y < add.at(j) -> mul.size() && y < add.at(i) -> mul.size(); y++){
-						if (y == 0){
-						}else{
-							#define a add.at(i) -> mul.at(y)
-							#define b add.at(j) -> mul.at(y)
-							if (a -> state != type::variable || b -> state != type::variable){
-								confirm = false;	
-							}
-							if ( a -> var != b -> var || a -> expo != b -> expo){
-								confirm = false;
-							}
-							#undef a
-							#undef b
-						}
-					}
-					if (confirm){
-						add.at(i) -> mul.at(0) -> sca = 
-							add.at(i) -> mul.at(0) -> sca + add.at(j) -> mul.at(0) -> sca;
-						add.erase(add.begin() + j);
-					}
-				}
-			}
-		}
-	}
-}
-*/
 void funk::setBase()
 {
   this->state = type::base;
@@ -423,6 +370,41 @@ void funk::simplifyAddition()
   
 }
 
+
+	//simplify children
+
+	//coeficient is 0
+	//exponent is 0
+
+	//if addition
+		//if functions are 2equal
+			//add coefficients and combine to one funk. replace lame funk with 0.
+		
+		//one daughter is 0
+
+	//if multiply
+		//if functions are 3 equal
+			//multiply coeficients and add exponents. replace other function with 1
+		//if one daughter is add
+			//multiply out new funk (FUNK ADD)
+		//if one daughter is mult
+			//move multiply inside of divide 
+		//if one daughter is scalar
+			//move to coefficient
+		//one daughter is 1
+		//one daughter is 0
+
+	//if divide
+		//is 3equals
+			//divide coeficients and subtract exponents. replace smaller expo with 1
+		//if node A is add
+			//VERY COMPLICATED! MUST CHECK POLY GCD (which is not done)
+		//if one daughter is divide
+			//numerators denomenator X denomenators numerator
+		//node A is 0
+		//node B is 0
+		//node B is 1
+
 void funk::simplify(){
   if (coef == 0 || expo == 0)
   {
@@ -440,487 +422,6 @@ void funk::simplify(){
   
       
 }
-
-  /*
-	if (expo == 0) {
-
-	}
-	else if (expo > 1) {}
-	
-	switch (state)
-	{
-		case type::variable: 	
-					break;
-		case type::scalar: 	
-					break;
-		case type::addition:
-					{
-					int scabegin = -1;
-					for (int i = 0; i < add.size(); i++ ){
-						add.at(i) -> simplify();
-						
-						if (add.at(i) -> state == type::addition){
-							while (!(add.at(i) -> add.empty()) ){
-							  add.push_back(std::move(add.at(i) -> add.back()));
-								add.at(i) -> add.pop_back();
-							}
-							add.erase(add.begin() + i);
-							i = 0;
-						}
-						
-						if (add.at(i) -> state == type::scalar){
-							if (scabegin == -1){
-								scabegin = i;
-							}
-							else if (scabegin != i && scabegin != -1){
-								add.at(scabegin) -> sca = (add.at(scabegin) -> sca) + (add.at(i) -> sca);
-								add.erase(add.begin() + i);
-								i = 0;
-							}
-							
-						}
-						if (add[i] -> state == type::multiply){
-							if (add[i] -> mul.size() == 0){
-								add.erase(add.begin() + i);
-								i--;
-							}
-						}
-					}
-					
-					//cout << endl;
-					//print();
-					supersimplify();
-
-					
-					if (add.size() == 1){
-						reduce();
-					}
-
-					break;
-				}
-		case  type::multiply: 
-				{
-					
-					int scabegin = -1;
-					for (int i = 0; i < mul.size(); i++ ){
-						mul.at(i)-> simplify();
-						if (mul.at(i) -> state == type::scalar){
-							if (mul[i] -> sca == 0){
-								while(!mul.empty()) mul.pop_back();
-								break;
-							}
-							if (mul[i] -> sca == 1 && mul.size() > 1){
-								mul.erase(mul.begin() + i);
-								break;
-							}
-							if (scabegin == -1){
-								if (i != 0){
-								
-									
-									std::unique_ptr<funk> temp;
-									std::unique_ptr<funk> scaful(new funk);
-									scaful -> state = type::scalar;
-									scaful -> sca = mul.at(i) -> sca;
-
-									std::swap(mul.at(0), mul.at(i));
-									temp = mul.at(0);
-									mul.at(0) = scaful;
-									mul.at(i) = temp;
-								
-								}
-								scabegin = 0;
-							}
-							else {
-								mul.at(scabegin) -> sca = (mul.at(scabegin) -> sca) * (mul.at(i) -> sca);
-								mul.erase(mul.begin() + i);
-								i = scabegin;
-							}
-						}
-					}
-
-					
-					if(mul.size() > 1){
-						for (int i = 0; i < mul.size(); i++ ){
-							if (mul.at(i) -> state == type::variable){	
-								for (int j = i; j < mul.size(); j++){
-									if (mul.at(j) -> state == type::variable && j != i){
-										if (mul.at(j) -> var == mul.at(i) -> var){
-											mul.at(i) -> expo = mul.at(i) -> expo +  mul.at(j) -> expo;
-											mul.erase(mul.begin() + j);
-											i = 0;
-										}
-									}
-								}
-							}
-						}
-					}
-					
-					
-					for (int i = 0; i < mul.size(); i++ ){
-						if (mul.at(i) -> state == type::variable && i+1 !=  mul.size() ){	
-							for (int j = i+1; j < mul.size(); j++){
-								if (mul.at(j) -> state == type::variable){
-									if (mul.at(i) -> var >  mul.at(j) -> var){
-									  //std::unique_ptr<funk> temp;
-										std::swap(mul.at(j), mul.at(i));
-										temp = mul.at(j);
-										mul.at(j) = mul.at(i);
-										mul.at(i) = temp;
-										i = 0;
-									}
-								}
-							}
-						}
-					}
-					
-
-					for (int i = 0; i < mul.size(); i++ ){
-						if (mul.at(i) -> state == type::multiply){
-							while (!(mul.at(i) -> mul.empty()) ){
-							  mul.push_back(std::move(mul.at(i) -> mul.back()));
-								mul.at(i) -> mul.pop_back();
-							}
-							//delete mul.at(i);
-							mul.erase(mul.begin() + i);
-						}
-					}
-					
-					for (int i = 0; i < mul.size(); i++){
-						if (mul.at(i) -> state == type::addition){
-							if (scabegin != -1){
-								for(int j = 0; j < mul.at(i) -> add.size(); j++){
-								  std::unique_ptr<funk> temp(new funk);
-									temp -> state = type::multiply;
-									std::unique_ptr<funk> tempsca(new funk);
-									tempsca -> state = type::scalar;
-									tempsca -> sca = mul.at(0) -> sca;
-									temp -> mul.push_back(std::move(tempsca));
-									temp -> mul.push_back(std::move(mul.at(i) -> add.at(j)));
-									mul.at(i) -> add.at(j) = std::move(temp);
-								}
-								mul.erase(mul.begin());
-							}
-							
-						}
-					}
-
-					int addbegin = -1;
-					for (int i = 0; i < mul.size(); i++){
-						if (mul.at(i) -> state == type::addition){
-							if (addbegin == -1){
-								addbegin = i;
-								i = 0;	
-							}
-							
-		
-						}
-						if (i != addbegin){
-							if (addbegin != -1 && mul[i] -> state != type::addition){
-							  std::unique_ptr<funk> temp(new funk);
-								temp -> state = type::addition;
-								for (int j = 0; j < mul.at(addbegin) -> add.size(); j++){
-								  std::unique_ptr<funk> tempmult(new funk);
-									tempmult -> state = type::multiply;
-									
-									std::unique_ptr<funk> tempA(new funk);
-									std::unique_ptr<funk> tempB(new funk);
-									
-									*tempA = *(mul.at(addbegin) -> add.at(j));
-									*tempB = *(mul.at(i));
-
-									tempmult -> mul.push_back(std::move(tempA));
-									tempmult -> mul.push_back(std::move(tempB));
-									
-									temp -> add.push_back(std::move(tempmult));
-								}
-								
-								if (i > addbegin){
-								mul.erase(mul.begin() + i);
-								mul.erase(mul.begin() + addbegin);
-								}else{
-								mul.erase(mul.begin() + addbegin);
-								mul.erase(mul.begin() + i);
-								}
-								mul.push_back(std::move(temp));
-								simplify();
-								i = 0;
-								addbegin = -1;
-							}else if (addbegin != -1 && mul[i] -> state == type::addition){	
-							  std::unique_ptr<funk> temp(new funk);
-								temp -> state = type::addition;
-								
-								for (int j = 0; j < mul.at(addbegin) -> add.size() ; j++){
-									for (int k = 0; k < mul.at(i) -> add.size(); k++){
-										
-									  std::unique_ptr<funk> tempmult(new funk);
-										tempmult -> state = type::multiply;
-										
-										std::unique_ptr<funk> tempA(new funk);
-										std::unique_ptr<funk> tempB(new funk);
-										
-										*tempA = *(mul.at(addbegin) -> add.at(j));
-										*tempB = *(mul.at(i) -> add.at(k));
-		
-										tempmult -> mul.push_back(std::move(tempA));
-										tempmult -> mul.push_back(std::move(tempB));
-										
-										temp -> add.push_back(std::move(tempmult));
-									}
-								}
-								if (i > addbegin){
-								mul.erase(mul.begin() + i);
-								mul.erase(mul.begin() + addbegin);
-								}else{
-								mul.erase(mul.begin() + addbegin);
-								mul.erase(mul.begin() + i);
-								}
-
-								
-								mul.push_back(std::move(temp));
-								simplify();
-								i = 0;
-								addbegin = -1;
-								
-								//there's a terrible memory leak in here, but I'll fix it later?
-							}
-						}	
-					}
-
-					for (int i = 0; i < mul.size(); i++){
-						if (mul[i] -> state == type::divide){
-							std::unique_ptr<funk> temp = new funk;
-							temp -> state = type::multiply;
-							for (int j = mul.size(); j >= 0 ; j--){
-								if (!(i == j || mul[j] -> state == type::divide)){
-									temp -> mul.push_back(mul[j]);
-									mul.erase(mul.begin() + j);
-									while (j > mul.size()) j--;
-								}
-							}
-							temp -> mul.push_back(mul[i] ->  num);
-							mul[i] -> num = temp;
-						}
-					}
-					if (mul.size() == 1 ){
-						reduce();
-					}
-					break;
-				}
-
-		case  	type::divide:	
-					num -> simplify();
-					den -> simplify();
-					if (den -> state == type::scalar && num -> state == type::scalar){
-						if ((num -> sca) % (den -> sca) == 0 ){
-							num -> sca = (num -> sca) / (den -> sca);
-							den -> sca = 1;
-						}
-					}
-					if (den -> state == type::variable && num -> state == type::variable){
-						if ((num -> var) == (den -> var)){
-						  std::unique_ptr<funk> one(new funk);
-							one -> state = type::scalar;
-							one -> sca = 1;
- 
-							if ((num -> expo) < (den -> expo)){
-								den -> expo = (den -> expo) - (num -> expo);
-								num = std::move(one);
-							}
-							if ((num -> expo) == (den -> expo)){
-							  std::unique_ptr<funk>one2(new funk);
-								one2 -> state = type::scalar;
-								one2 -> sca = 1;
-
-								num = std::move(one);
-								den = std::move(one2);
-							}
-							if ((num -> expo) > (den -> expo)){
-								num -> expo = (num -> expo) - (den -> expo);
-								den = std::move(one);
-							}
-						}	
-					}
-					if (den -> state == type::multiply && num -> state == type::multiply){
-						for (int i = 0; i < den -> mul.size(); i++){
-							for (int j = 0 ; j < num -> mul.size(); j++){
-								if (den -> mul[i]-> state == num -> mul[j] -> state){
-									if (den -> mul[i] -> state == type::scalar){
-										if ((num -> mul[j] -> sca) % (den -> mul[i] -> sca) == 0){
-											num -> mul[j] -> sca =
-												 (num -> mul[j]-> sca)/(den -> mul[i]-> sca);
-											den -> mul[i] -> sca = 1;
-										}
-										else{
-										  std::unique_ptr<funk> divi(new funk);
-											divi -> state = type::divide;
-											
-											divi -> num = std::move(num -> mul[j]);
-											divi -> den = std::move(den -> mul[i]);//This is not right, this will be undefined when dereferenced in three lines
-
-											num -> mul[j]  = std::move(divi);
-											//den -> mul[i] -> sca = 1; This is undefined behavior due to move above
-										}
-									}
-									if (den -> mul[i] -> state == type::variable
-									&& den -> mul[i] -> var == num -> mul [j] -> var ){
-										std::unique_ptr<funk> den1;
-										std::unique_ptr<funk> num1;
-										
-										den1 = std::move(den-> mul[i]);
-										num1 = std::move(num-> mul[j]);
-	
-										std::unique_ptr<funk> one(new funk);
-										one -> state = type::scalar;
-										one -> sca = 1;
-			 
-										if ((num1 -> expo) < (den1 -> expo)){
-											den1 -> expo = (den1 -> expo) - (num1 -> expo);
-											num1 = std::move(one);
-										}
-										if ((num1 -> expo) == (den1 -> expo)){
-										  std::unique_ptr<funk> one2(new funk);
-											one2 -> state = type::scalar;
-											one2 -> sca = 1;
-
-											num1 = std::move(one);
-											den1 = std::move(one2);
-										}
-										if ((num1 -> expo) > (den1 -> expo)){
-											num1 -> expo = (num1 -> expo) - (den1 -> expo);
-											den1 = std::move(one);
-										}
-
-										
-										den -> mul [i] = std::move(den1);
-										num -> mul [j] = std::move(num1);
-
-									}
-								}
-							}
-						}
-					}	
-			
-					if ((den -> state == type::scalar || den -> state == type::variable) && num -> state == type::multiply){
-						for (int j = 0 ; j < num -> mul.size(); j++){
-							if (den -> state == num -> mul[j] -> state){
-								if (den ->  state == type::scalar){
-									if ((num -> mul[j] -> sca) % (den -> sca) == 0){
-										num  -> mul[j] ->  sca =
-											 (num  -> mul[j] -> sca)/(den -> sca);
-										den -> sca = 1;
-									}
-									else{
-									  std::unique_ptr<funk> divi(new funk);
-										divi -> state = type::divide;
-										
-										divi -> num = std::move(num -> mul[j]);
-										divi -> den = std::move(den);
-
-										num -> mul[j]  = std::move(divi);
-										den.reset(new funk);
-										den ->  sca = 1;
-									}
-								}
-								if (den -> state == type::variable
-								&& den -> var == num  -> mul[j] -> var ){
-									std::unique_ptr<funk> den1;
-									std::unique_ptr<funk> num1;
-									
-									den1 = std::move(den);
-									num1 = std::move(num-> mul[j]);
-
-									std::unique_ptr<funk> one(new funk);
-									one -> state = type::scalar;
-									one -> sca = 1;
-		 
-									if ((num1 -> expo) < (den1 -> expo)){
-										den1 -> expo = (den1 -> expo) - (num1 -> expo);
-										num1 = std::move(one);
-									}
-									if ((num1 -> expo) == (den1 -> expo)){
-									  std::unique_ptr<funk> one2(new funk);
-										one2 -> state = type::scalar;
-										one2 -> sca = 1;
-
-										num1 = std::move(one);
-										den1 = std::move(one2);
-									}
-									if ((num1 -> expo) > (den1 -> expo)){
-										num1 -> expo = (num1 -> expo) - (den1 -> expo);
-										den1 = std::move(one);
-									}
-
-									
-									den  = std::move(den1);
-									num -> mul [j] = std::move(num1);
-
-								}
-							}
-						}
-					
-					}
-							
-					num -> simplify();
-					den -> simplify();
-
-					if (den -> state == type::scalar){
-						if (den -> sca == 1) reduce();
-					}
-					break;
-		case  	type::cosine:		break;
-		case  	type::sine:		break;
-		case  	type::logarithm:	break;
-		case 	type::exponential:	break;
-	
-		default:		cout << "This should never occur\n";
-		
-		//	
-	}
-}
-
-void funk::degOrg(){
-	if (state == type::addition){ 
-		for (int i = 0; i+1 < add.size(); i++){
-			add[i] -> degOrg();
-			for (int j = i+1; j < add.size(); j++){
-				add[j] -> degOrg();
-				if (compareA(*add[i]) == compareA(*add[j])){
-					if (degCompare(add[j], add[i])){
-					  std::swap(add[i], add[j]);
-					  					}
-				}else if (compareA(*add[j]) > compareA(*add[i])){
-
-				  std::swap(add[i], add[j]);
-				 }
-			}
-		}
-
-	}
-	else if (state == type::multiply){
-		for (int i = 0; i+1< mul.size(); i++){
-			mul[i] -> degOrg();
-			for (int j = i+1; j < mul.size(); j++){
-				mul[j] -> degOrg();
-				if (compareA(*mul[i]) == compareA(*mul[j])){
-					if (degCompare(mul[j], mul[i])){
-					  std::swap(mul[j], mul[i]);
-					  					}
-				}else if (compareA(*mul[j]) > compareA(*mul[i])){
-				  std::swap(mul[j], mul[i]);
-				}
-			}
-		}
-	}
-	
-}
-
-void funk::intoReady(){
-	simplify();
-	simplify();
-	simplify();
-	degOrg();
-}
-*/
 
 bool funk::statesAndNodesEqual(const funk& obj){
   return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->node);
@@ -970,6 +471,8 @@ funk funk::operator/(const funk& obj){
 	
 	return ret;
 }
+
+
 /*
 funk fcoeff(funk curr, char c ){
 	if (curr.state == type::multiply){

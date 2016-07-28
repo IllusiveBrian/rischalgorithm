@@ -156,13 +156,17 @@ void funk::reduce(){
 funk& funk::operator=(const funk& obj){
 	if (this != &obj)
 	{
-	  this->state = obj.state;
-	  this->coef = obj.coef;
-	  this->expo = obj.expo;
-	  this->nodeA->reset(new funk(*obj.nodeA));
-	  this->nodeB->reset(new funk(*obj.nodeB));
+	  this->replaceWith(obj);
 	}
 	return *this;
+}
+
+void funk::replaceWith(const funk& obj){
+  this->state = obj.state;
+  this->coef = obj.coef;
+  this->expo = obj.expo;
+  this->nodeA->reset(new funk(*obj.nodeA));
+  this->nodeB->reset(new funk(*obj.nodeB));
 }
 
 /*
@@ -224,7 +228,7 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 				break;
 			}
 		case type::multiply:
-			{
+		{
 				for (int i = 0; i < a -> mul.size() && i < b -> mul.size(); i++){
 					if (compareA(*(a -> mul[i])) == compareA(*(b -> mul[i]))){
 						if (degCompare(a -> mul[i], b -> mul[i])){
@@ -245,7 +249,7 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 					return degCompare(a -> num, b -> num);	
 				}else{  
 					if (!(compareM(*(a -> den)) == compareM(*(b -> den)))){
-						return compareM(*(a -> den)) > compareM(*(b -> den));
+					return compareM(*(a -> den)) > compareM(*(b -> den));
 					}
 					return degCompare(a -> den, b -> den);
 				}
@@ -393,8 +397,48 @@ void funk::supersimplify(){
 	}
 }
 */
-void funk::simplify(){
+void funk::setBase()
+{
+  this->state = type::base;
+  this->nodeA.reset(nullptr);
+  this->nodeB.reset(nullptr);
+}
+
+//Only call these on objects with the correct state, or bad things will happen
+void funk::simplifyAddition()
+{
+  if(nodeA->coef == 0){
+    this->replaceWith(nodeB);
+  }
+  if (nodeB->coef == 0){
+    this->replaceWith(nodeA);
+  }
+  if (nodeA->compareWithoutCoef(*nodeB)){
+    this->coef = nodeA->coef + nodeB->coef;
+    this->expo = nodeA->expo;
+    this->state = nodeA->state;
+    this->nodeA = std::move(nodeB->nodeA);
+    this->nodeB = std::move(nodeB->nodeB);
+  }
   
+}
+
+void funk::simplify(){
+  if (coef == 0 || expo == 0)
+  {
+    setBase();
+    return;
+  }
+  else{
+    nodeA->simplify();
+    nodeB->simplify();
+  }
+  switch (state){
+  case type::base: return;
+  case type::addition:
+    simplifyAddition();
+  
+      
 }
 
   /*

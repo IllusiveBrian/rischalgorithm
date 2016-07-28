@@ -44,7 +44,7 @@ class funk{
 	///organize function tools
 	void supersimplify();
 	void simplify();
-	void intoReady();
+	void organize();
 	void degOrg();
 	void degOrg(char c);
 	

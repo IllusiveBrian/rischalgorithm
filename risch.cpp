@@ -27,69 +27,7 @@ funk::funk(const funk &obj){
 }
 
 /*
-int compareM(funk a){
-	switch(a.state){
-		case type::scalar:
-			return 9;
-			break;
-		case type::variable:
-			return 8;
-			break;
-		case type::addition:
-			return 7;
-			break;
-		case type::multiply:
-			return 6;
-			break;
-		case type::divide:
-			return 5;
-			break;
-		case type::cosine:
-			return 4;
-			break;
-		case type::sine:
-			return 3;
-			break;
-		case type::logarithm:
-			return 2;
-			break;
-		case type::exponential:
-			return 1;
-			break;
-	}
-}
 
-int compareA(funk a){
-	switch(a.state){
-		case type::variable:
-			return 9;
-			break;
-		case type::addition:
-			return 8;
-			break;
-		case type::multiply:
-			return 7;
-			break;
-		case type::divide:
-			return 6;
-			break;
-		case type::cosine:
-			return 5;
-			break;
-		case type::sine:
-			return 4;
-			break;
-		case type::logarithm:
-			return 3;
-			break;
-		case type::exponential:
-			return 2;
-			break;
-		case type::scalar:
-			return 1;
-			break;
-	}
-}
 
 
 
@@ -340,62 +278,6 @@ void funk::print(){
 	if (expo > 1) cout << "^" << expo ;
 }
 
-//just so you're aware, rem(a, b) is (a % b) ?
-/*
-void funk::supersimplify(){
-	//print();
-	//cout << "but I could never" << endl;
-	if (state != type::addition) return;
-	
-	for (int i = 0; i < add.size(); i++){
-		if (add[i] -> state == type::variable){
-		  std::unique_ptr<funk> temp = std::unique_ptr<funk>(new funk);
-			temp -> state = type::multiply;
-			std::unique_ptr<funk> one = std::unique_ptr<funk>(new funk);
-			one -> state = type::scalar;
-			one -> sca = 1;
-			
-			temp -> mul.push_back(std::move(one));
-			temp -> mul.push_back(std::move(add[i]));
-		
-			add[i] = std::move(temp);
-		}
-	}
-
-	for (int i = 0; i < add.size(); i++){
-		if (add.at(i) -> state == type::multiply){
-			for (int j = i; j < add.size(); j++){				
-				if (add.at(j) -> state == type::multiply && i != j){
-					bool confirm = true;	
-					for(int y = 0; y < add.at(j) -> mul.size() && y < add.at(i) -> mul.size(); y++){
-						if (y == 0){
-						}else{
-							#define a add.at(i) -> mul.at(y)
-							#define b add.at(j) -> mul.at(y)
-							if (a -> state != type::variable || b -> state != type::variable){
-								confirm = false;	
-							}
-							if ( a -> var != b -> var || a -> expo != b -> expo){
-								confirm = false;
-							}
-							#undef a
-							#undef b
-						}
-					}
-					if (confirm){
-						add.at(i) -> mul.at(0) -> sca = 
-							add.at(i) -> mul.at(0) -> sca + add.at(j) -> mul.at(0) -> sca;
-						add.erase(add.begin() + j);
-					}
-				}
-			}
-		}
-	}
-}
-*/
-
-
-
 funk& funk::operator+(const funk& obj){
 	funk ret;				
 	ret.state = type::addition;
@@ -438,10 +320,49 @@ funk& funk::operator/(const funk& obj){
 	return *tet;
 }
 
+int compare(funk a){
+	switch(a.state){
+		case type::addition:
+			return 8;
+			break;
+		case type::multiply:
+			return 7;
+			break;
+		case type::divide:
+			return 6;
+			break;
+		case type::cosine:
+			return 5;
+			break;
+		case type::sine:
+			return 4;
+			break;
+		case type::logarithm:
+			return 3;
+			break;
+		case type::exponential:
+			return 2;
+			break;
+		case type::base:
+			return 1;
+			break;
+	}
+}
+
+void funk::organize(){
+	if (state == type::addition || state == type::multiply){
+		if (compare(*nodeA) < compare(*nodeB)) {
+			std::swap(nodeA, nodeB);
+		}	
+		if (compare(*nodeA) == compare(*nodeB)){
+			if (nodeA -> expo < nodeB -> expo) std::swap(nodeA, nodeB);
+		}
+	}
+}
+
 void funk::simplify(){
 	//simplify children
 
-	//coeficient is 0
 	//exponent is 0
 
 	//if addition
@@ -472,6 +393,9 @@ void funk::simplify(){
 		//node A is 0
 		//node B is 0
 		//node B is 1
+
+	//organize by function tier and exponent
+	this -> organize();
 }
 
 

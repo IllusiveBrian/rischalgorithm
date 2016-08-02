@@ -26,6 +26,18 @@ funk::funk(const funk &obj){
 
 }
 
+funk::funk(funk&& obj){
+  this->moveTo(obj);
+}
+
+void funk::moveTo(funk& obj){
+  this->state = obj.state;
+  this->coef = obj.coef;
+  this->expo = obj.expo;
+  this->nodeA = std::move(obj.nodeA);
+  this->nodeB = std::move(obj.nodeB);
+}
+
 /*
 int compareM(funk a){
 	switch(a.state){
@@ -159,6 +171,11 @@ funk& funk::operator=(const funk& obj){
 	  this->replaceWith(obj);
 	}
 	return *this;
+}
+
+funk& funk::operator=(funk&& obj){
+  this->moveTo(obj);
+  return *this;
 }
 
 void funk::replaceWith(const funk& obj){
@@ -380,6 +397,7 @@ void funk::evaluateCoef(int updatedCoef, std::unique_ptr<funk>& nodeToCopy)
   this->nodeB = std::move(tempB);
 }
 
+//call this if BOTH children are division in multiplication funk
 void funk::multiplyDivisions()
 {
   unique_ptr<funk> toswitch;
@@ -389,6 +407,31 @@ void funk::multiplyDivisions()
   toswitch->nodeA.reset(new funk(*(this->nodeA->nodeA) * *(this->nodeB->nodeA)));
   toswitch->nodeB.reset(new funk(*(this->nodeA->nodeB) * *(this->nodeB->nodeB)));
   this->replaceWith(toswitch);
+  this->simplify();
+}
+
+//Call this if EXACTLY ONE child is division in multiplication funk
+void funk::upjumpDivision()
+{
+#define upjumpMacro(divNode, otherNode) (temp->nodeA->replaceWith(*(otherNode) * *this),	\
+  temp->nodeB->replaceWith((divNode)->nodeB),\
+  temp->state = type::divide,\
+  temp->coef = divNode->coef,\
+  temp->expo = divNode->expo)
+  std::unique_ptr<funk> temp;
+  this->nodeA->state == type::divide ? upjumpMacro(this->nodeA, this->nodeB) : upjumpMacro(this->nodeB, this->nodeA);
+  this->replaceWith(temp);
+  this->simplify();
+}
+
+void funk::distributeNodes(){
+  std::unique_ptr<funk> temp;
+  temp->nodeA->replaceWith(*(this->nodeA) * *(this->nodeB->nodeA));
+  temp->nodeB->replaceWith(*(this->nodeA) * *(this->nodeB->nodeB));
+  temp->state = type::addition;
+  temp->coef = 1;
+  temp->expo = 1;
+  this->replaceWith(temp);
   this->simplify();
 }
 
@@ -419,19 +462,23 @@ void funk::simplifyMulitiplication()
   bool nodeAConst = nodeA->isConstant(), nodeBConst = nodeB->isConstant(),
     nodeADiv = nodeA->state == type::divide, nodeBDiv = nodeB->state == type::divide,
     nodeAAdd = nodeA->state == type::addition, nodeBAdd = nodeB->state == type::addition;
+
   if (nodeADiv || nodeBDiv){
     if (nodeADiv && nodeBDiv){
       multiplyDivisions();
     }
+    else{
+      upjumpDivision();
+    }
   }
-  
-  if (nodeAConst){
+  else if (nodeAAdd || nodeBAdd){
+    distributeNodes();
+  }
+  else if (nodeAConst){
     evaluateCoef(nodeA->coef * nodeB->coef, nodeB);
   }
   else if (nodeBConst){
     evaluateCoef(nodeA->coef * nodeB->coef, nodeA); 
-  }
-  else if (false){
   }
     
 }
@@ -485,10 +532,9 @@ void funk::simplify(){
   if (isConstant())
   {
     setBase();
-    return;
   }
   switch (state){
-  case type::base: return;
+  case type::base: break;
   case type::addition:
     breakExpo();
     simplifyAddition();
@@ -502,6 +548,7 @@ void funk::simplify(){
     simplifyDivision();
     break;
   }
+  return;
 }
 
 bool funk::compareMathEquiv(const funk& obj){

@@ -118,6 +118,16 @@ funk& funk::operator=(funk&& obj){
   return *this;
 }
 
+funk& funk::operator=(const int& constant) //Assign a funk to be a constant
+{
+  this->expo = 0;
+  this->coef = constant;
+  this->state = type::base;
+  this->nodeA.reset(nullptr);
+  this->nodeB.reset(nullptr);
+  return *this;
+}
+
 void funk::replaceWith(const funk& obj){
   this->state = obj.state;
   this->coef = obj.coef;
@@ -306,7 +316,7 @@ void funk::print(){
 	if (expo > 1) cout << "^" << expo ;
 }
 
-funk& funk::operator+(const funk& obj){
+funk funk::operator+(const funk& obj){
 	funk ret;				
 	ret.state = type::addition;
 	
@@ -319,9 +329,19 @@ funk& funk::operator+(const funk& obj){
 	return *tet;
 }
 
-bool funk::isConstant()
+//Returns whether the function is constant, ie whether all greatest grandchildren are constants
+bool funk::isConstant(){
+}
+
+//Returns whether this particular funk is a constant (checks independent of type
+bool funk::isInteger()
 {
-  return expo == 0 || coef == 0;
+  return state == type::base || expo == 0 || isZero();
+}
+
+bool funk::isZero()
+{
+  return coef == 0;
 }
 
 void funk::breakExpo(){
@@ -419,7 +439,7 @@ void funk::simplifyDivide()
   if (nodeB->coef == 0){
     //an error has occured
   }
-  if (nodeB -> coef == (funk one(1)){
+  if (*nodeB == 1){
     this->replaceWith(nodeA);
     return;
   } 
@@ -464,9 +484,7 @@ void funk::simplifyDivide()
 
 void funk::simplifyMulitiplication()
 {
-  bool nodeAConst = nodeA->isConstant(), nodeBConst = nodeB->isConstant(),
-    nodeADiv = nodeA->state == type::divide, nodeBDiv = nodeB->state == type::divide,
-    nodeAAdd = nodeA->state == type::addition, nodeBAdd = nodeB->state == type::addition;
+  bool nodeADiv = nodeA->state == type::divide, nodeBDiv = nodeB->state == type::divide;
 
   if (nodeADiv || nodeBDiv){
     if (nodeADiv && nodeBDiv){
@@ -476,23 +494,48 @@ void funk::simplifyMulitiplication()
       upjumpDivision();
     }
   }
-  else if (nodeAAdd || nodeBAdd){
+  else if (nodeA->state == type::addition || nodeB->state == type::addition){
     distributeNodes();
   }
-  else if (nodeAConst){
+  else if (nodeA->isInteger()){
     evaluateCoef(nodeA->coef * nodeB->coef, nodeB);
   }
-  else if (nodeBConst){
+  else if (nodeB->isInteger()){
     evaluateCoef(nodeA->coef * nodeB->coef, nodeA); 
   }
     
 }
 
-void funk::simplifyDivision(){
-
+void funk::simplifyExponent(){
+  if (nodeA->isZero()){
+    *this = 1;
+  }
+  else{
+    if(expo > 1){
+      nodeA->coef *= expo;
+      expo = 1;
+    }
+    if (nodeA->state == type::logarithm && nodeA->expo == 1){
+      this->replaceWith(nodeA->nodeA);
+    }
+  }
 }
 
-int compare(funk a){
+void funk::simplifyLogarithm(){
+  if (nodeA->isZero()){
+    throw math_too_hard("Expression log(0) is not supported");
+  }
+  else if (*nodeA == 1){
+    *this = 0;
+  }
+  else if (nodeA->state == type::exponential){
+    this->replaceWith(nodeA->nodeA); //Note that this is not actually defined for negative values of x, but we don't check that
+  }
+}
+  
+    
+
+/*int compare(funk a){
 	switch(a.state){
 		case type::addition:
 			return 8;
@@ -519,17 +562,12 @@ int compare(funk a){
 			return 9;
 			break;
 	}
-}
+	}*/
 
 void funk::organize(){
-	if (state == type::addition || state == type::multiply){
-		if (compare(*nodeA) < compare(*nodeB)) {
-			std::swap(nodeA, nodeB);
-		}	
-		if (compare(*nodeA) == compare(*nodeB)){
-			if (nodeA -> expo < nodeB -> expo) std::swap(nodeA, nodeB);
-		}
-	}
+  if ((state == type::addition || state == type::multiply) && *nodeA < *nodeB) {
+    std::swap(nodeA, nodeB);
+  }	
 }
 	
 void funk::simplify(){
@@ -539,12 +577,13 @@ void funk::simplify(){
   if (nodeB){
     nodeB->simplify();
   }
-  if (isConstant())
+  if (isInteger())
   {
     setBase();
   }
   switch (state){
-  case type::base: break;
+  case type::base:
+    break;
   case type::addition:
     breakExpo();
     simplifyAddition();
@@ -555,11 +594,24 @@ void funk::simplify(){
     break;
   case type::divide:
     breakExpo();
-    simplifyDivision();
+    simplifyDivide();
     break;
-      
-    this -> organize();
+  case type::sine:
+    if (this->nodeA->isZero())
+      *this = 0;
+    break;
+  case type::cosine:
+    if (this->nodeA->isZero())
+      *this = 1;
+    break;
+  case type::exponent:
+    simplifyExponent();
+    break;
+  case type::logarithm:
+    simplifyLogarithm();
+    break;
   }
+  this -> organize();
   return;
 }
 
@@ -568,7 +620,7 @@ bool funk::compareMathEquiv(const funk& obj){
 }
 
 bool funk::statesAndNodesEqual(const funk& obj){
-  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->nodeB == this->nodeB);
+  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->nodeB == obj.nodeB);
 }
 
 bool funk::compareWithoutCoef(const funk& obj){
@@ -579,13 +631,28 @@ bool funk::operator==(const funk& obj){
     return this->coef == obj.coef && compareWithoutCoef(obj);
 }
 
+bool funk::operator==(const int& constant){
+  return (this->expo == 0 && this->coef == constant) || (constant == 0 && isZero());
+}
+
+#define inequalityComparison(sign) (this->type sign obj.type) || (this->type == obj.type && this->expo sign obj.expo) || (this->expo == obj.expo && this->nodeA sign obj.nodeA) || (this->nodeA == obj.nodeA && this->nodeB sign obj.nodeB)
+bool funk::operator<(const funk& obj)
+{
+  return inequalityComparison(<);
+}
+
+bool funk::operator>(const funk& obj)
+{
+  return inequalityComparison(>);
+}
+
 funk funk::operator+(const funk& obj){ //Might need to return a reference
 	funk ret;				
 	ret.state = type::addition;
 	
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeB.reset(new funk(obj));
-	//ret->simplify();
+	ret->simplify();
         			
 	return ret;
 }
@@ -596,7 +663,7 @@ funk funk::operator*(const funk& obj){
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeA.reset(new funk(obj));
 
-	//ret -> simplify();
+	ret -> simplify();
 	return ret;
 }
 

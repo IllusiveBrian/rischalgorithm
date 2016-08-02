@@ -9,7 +9,9 @@
 #include <algorithm>
 #include <utility>
 
-enum class type { broken, base, addition, multiply, divide, cosine, sine, logarithm, exponential};
+#include "customexceptions.cpp"
+
+enum class type { broken, exponential, logarithm, cosine, sine, divide, multiply, addition, base };
 
 class funk{
  public:
@@ -23,12 +25,16 @@ class funk{
 
 	funk& operator=(const funk& obj);
 	funk& operator=(funk&& obj);
+	funk& operator=(const int&);
 
 	funk operator+(const funk& obj);	
 	funk operator*(const funk& obj);
 	funk operator/(const funk& obj);	
 
-	bool operator==(const funk& obj);
+	bool operator==(const funk&);
+	bool operator==(const int&);
+	bool operator<(const funk&);
+	bool operator>(const funk&);
 	bool statesAndNodesEqual(const funk& obj);
 	bool compareWithoutCoef(const funk& obj);
 	bool compareMathEquiv(const funk&);
@@ -54,6 +60,8 @@ class funk{
 	void degOrg();
 	void degOrg(char c);
 	bool isConstant();
+	bool isInteger();
+	bool isZero();
 	
 	//holds protostate during parsing
 	std::string pstring;
@@ -80,7 +88,9 @@ class funk{
 	void setBase();
 	void simplifyAddition();
 	void simplifyMulitiplication();
-	void simplifyDivision();
+	void simplifyDivide();
+	void simplifyExponent();
+	void simplifyLogarithm();
 	
 };
 

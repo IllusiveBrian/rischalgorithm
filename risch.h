@@ -18,21 +18,26 @@ class funk{
 	funk(const funk &obj);
 	funk(funk&& obj);	
 
-	//~funk();
+        ~funk() = default;
 
 	funk& operator=(const funk& obj);
-	//funk& operator=(const funk&& obj);
+	funk& operator=(funk&& obj);
 
-	//operators needed:
-	funk& operator+(const funk& obj);	
-	funk& operator*(const funk& obj);
-	funk& operator/(const funk& obj);	
+	funk operator+(const funk& obj);	
+	funk operator*(const funk& obj);
+	funk operator/(const funk& obj);	
 
+	bool operator==(const funk& obj);
+	bool statesAndNodesEqual(const funk& obj);
+	bool compareWithoutCoef(const funk& obj);
+	bool compareMathEquiv(const funk&);
 	//need some way to incoroprate functions like sin, cos, tan.
 	//need some way to find neccisary functions...
 
 	
 	void reduce();
+
+	
 	
 	int deg();
 	int coeff();
@@ -47,6 +52,7 @@ class funk{
 	void intoReady();
 	void degOrg();
 	void degOrg(char c);
+	bool isConstant();
 	
 	//holds protostate during parsing
 	std::string pstring;
@@ -60,6 +66,20 @@ class funk{
 	
 	//divide numer A / denom B
 	//sinngle nodes go to A
+
+ private:
+	void moveTo(funk&);
+	void replaceWith(const funk&);
+	void replaceWith(const std::unique_ptr<funk>&);
+	void breakExpo();
+	void evaluateCoef(int, std::unique_ptr<funk>&);
+	void multiplyDivisions();
+	void upjumpDivision();
+	void distributeNodes();
+	void setBase();
+	void simplifyAddition();
+	void simplifyMulitiplication();
+	void simplifyDivision();
 	
 };
 

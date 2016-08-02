@@ -26,6 +26,18 @@ funk::funk(const funk &obj){
 
 }
 
+funk::funk(funk&& obj){
+  this->moveTo(obj);
+}
+
+void funk::moveTo(funk& obj){
+  this->state = obj.state;
+  this->coef = obj.coef;
+  this->expo = obj.expo;
+  this->nodeA = std::move(obj.nodeA);
+  this->nodeB = std::move(obj.nodeB);
+}
+
 /*
 int compareM(funk a){
 	switch(a.state){
@@ -156,13 +168,27 @@ void funk::reduce(){
 funk& funk::operator=(const funk& obj){
 	if (this != &obj)
 	{
-	  this->state = obj.state;
-	  this->coef = obj.coef;
-	  this->expo = obj.expo;
-	  this->nodeA.reset(new funk(*obj.nodeA));
-	  this->nodeB.reset(new funk(*obj.nodeB));
+	  this->replaceWith(obj);
 	}
 	return *this;
+}
+
+funk& funk::operator=(funk&& obj){
+  this->moveTo(obj);
+  return *this;
+}
+
+void funk::replaceWith(const funk& obj){
+  this->state = obj.state;
+  this->coef = obj.coef;
+  this->expo = obj.expo;
+  this->nodeA.reset(new funk(*obj.nodeA));
+  this->nodeB.reset(new funk(*obj.nodeB));
+}
+
+void funk::replaceWith(const std::unique_ptr<funk>& obj)
+{
+  this->replaceWith(*obj);
 }
 
 /*
@@ -224,7 +250,7 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 				break;
 			}
 		case type::multiply:
-			{
+		{
 				for (int i = 0; i < a -> mul.size() && i < b -> mul.size(); i++){
 					if (compareA(*(a -> mul[i])) == compareA(*(b -> mul[i]))){
 						if (degCompare(a -> mul[i], b -> mul[i])){
@@ -245,7 +271,7 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 					return degCompare(a -> num, b -> num);	
 				}else{  
 					if (!(compareM(*(a -> den)) == compareM(*(b -> den)))){
-						return compareM(*(a -> den)) > compareM(*(b -> den));
+					return compareM(*(a -> den)) > compareM(*(b -> den));
 					}
 					return degCompare(a -> den, b -> den);
 				}
@@ -340,105 +366,128 @@ void funk::print(){
 	if (expo > 1) cout << "^" << expo ;
 }
 
-//just so you're aware, rem(a, b) is (a % b) ?
-/*
-void funk::supersimplify(){
-	//print();
-	//cout << "but I could never" << endl;
-	if (state != type::addition) return;
-	
-	for (int i = 0; i < add.size(); i++){
-		if (add[i] -> state == type::variable){
-		  std::unique_ptr<funk> temp = std::unique_ptr<funk>(new funk);
-			temp -> state = type::multiply;
-			std::unique_ptr<funk> one = std::unique_ptr<funk>(new funk);
-			one -> state = type::scalar;
-			one -> sca = 1;
-			
-			temp -> mul.push_back(std::move(one));
-			temp -> mul.push_back(std::move(add[i]));
-		
-			add[i] = std::move(temp);
-		}
-	}
-
-	for (int i = 0; i < add.size(); i++){
-		if (add.at(i) -> state == type::multiply){
-			for (int j = i; j < add.size(); j++){				
-				if (add.at(j) -> state == type::multiply && i != j){
-					bool confirm = true;	
-					for(int y = 0; y < add.at(j) -> mul.size() && y < add.at(i) -> mul.size(); y++){
-						if (y == 0){
-						}else{
-							#define a add.at(i) -> mul.at(y)
-							#define b add.at(j) -> mul.at(y)
-							if (a -> state != type::variable || b -> state != type::variable){
-								confirm = false;	
-							}
-							if ( a -> var != b -> var || a -> expo != b -> expo){
-								confirm = false;
-							}
-							#undef a
-							#undef b
-						}
-					}
-					if (confirm){
-						add.at(i) -> mul.at(0) -> sca = 
-							add.at(i) -> mul.at(0) -> sca + add.at(j) -> mul.at(0) -> sca;
-						add.erase(add.begin() + j);
-					}
-				}
-			}
-		}
-	}
-}
-*/
-
-
-
-funk& funk::operator+(const funk& obj){
-	funk ret;				
-	ret.state = type::addition;
-	
-	ret.nodeA.reset(new funk(*this));
-	ret.nodeB.reset(new funk(obj));
-	//ret->simplify();
-	
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+bool funk::isConstant()
+{
+  return expo == 0 || coef == 0;
 }
 
-funk& funk::operator*(const funk& obj){
-	funk ret;
-	ret.state = type::multiply;
-	ret.nodeA.reset(new funk(*this));
-	ret.nodeA.reset(new funk(obj));
-
-	//ret -> simplify();
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+void funk::breakExpo(){
+  if (this->expo > 1){
+    unique_ptr<funk> tempMult, tempRepA(new funk(*this)), tempRepB(new funk(*this));
+    tempMult->state = type::multiply;
+    tempMult->expo = 1;
+    tempMult->coef = 1;
+    
+    tempRepA->expo = 1;
+    tempRepB->expo = this->expo - 1;
+    tempMult->nodeA = std::move(tempRepA);
+    tempMult->nodeB = std::move(tempRepB);
+    this->replaceWith(*tempMult);
+    this->nodeB->breakExpo();
+  }
 }
 
-funk& funk::operator/(const funk& obj){
-  // std::unique_ptr<funk> objcopy(new funk);
-  // 	* objcopy = obj;
-  // 	std::unique_ptr<funk> thiscopy(new funk);
-  // 	* thiscopy = *this;
-	funk ret;
-	ret.state = type::divide;
-
-	ret.nodeA.reset(new funk(*this));
-	ret.nodeB.reset(new funk(obj));
-	
-	//	ret.simplify();
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
+void funk::evaluateCoef(int updatedCoef, std::unique_ptr<funk>& nodeToCopy)
+{
+  this->coef = updatedCoef;
+  this->expo = nodeToCopy->expo;
+  this->state = nodeToCopy->state;
+  unique_ptr<funk> tempA = std::move(nodeToCopy->nodeA), tempB = std::move(nodeToCopy->nodeB);//I don't know whether nodeToCopy is nodeA or nodeB, so I need to do this before invalidating it in the next two lines
+  this->nodeA = std::move(tempA);
+  this->nodeB = std::move(tempB);
 }
 
-void funk::simplify(){
+//call this if BOTH children are division in multiplication funk
+void funk::multiplyDivisions()
+{
+  unique_ptr<funk> toswitch;
+  toswitch->state = type::divide;
+  toswitch->coef = this->nodeA->coef * this->nodeB->coef;
+  toswitch->expo = 1;
+  toswitch->nodeA.reset(new funk(*(this->nodeA->nodeA) * *(this->nodeB->nodeA)));
+  toswitch->nodeB.reset(new funk(*(this->nodeA->nodeB) * *(this->nodeB->nodeB)));
+  this->replaceWith(toswitch);
+  this->simplify();
+}
+
+//Call this if EXACTLY ONE child is division in multiplication funk
+void funk::upjumpDivision()
+{
+#define upjumpMacro(divNode, otherNode) (temp->nodeA->replaceWith(*(otherNode) * *this),	\
+  temp->nodeB->replaceWith((divNode)->nodeB),\
+  temp->state = type::divide,\
+  temp->coef = divNode->coef,\
+  temp->expo = divNode->expo)
+  std::unique_ptr<funk> temp;
+  this->nodeA->state == type::divide ? upjumpMacro(this->nodeA, this->nodeB) : upjumpMacro(this->nodeB, this->nodeA);
+  this->replaceWith(temp);
+  this->simplify();
+}
+
+void funk::distributeNodes(){
+  std::unique_ptr<funk> temp;
+  temp->nodeA->replaceWith(*(this->nodeA) * *(this->nodeB->nodeA));
+  temp->nodeB->replaceWith(*(this->nodeA) * *(this->nodeB->nodeB));
+  temp->state = type::addition;
+  temp->coef = 1;
+  temp->expo = 1;
+  this->replaceWith(temp);
+  this->simplify();
+}
+
+void funk::setBase()
+{
+  this->state = type::base;
+  this->nodeA.reset(nullptr);
+  this->nodeB.reset(nullptr);
+}
+
+//Only call these on objects with the correct state, or bad things will happen
+void funk::simplifyAddition()
+{
+  if(nodeA->coef == 0){
+    this->replaceWith(nodeB);
+  }
+  else if (nodeB->coef == 0){
+    this->replaceWith(nodeA);
+  }
+  else if (nodeA->compareWithoutCoef(*nodeB)){
+    evaluateCoef(nodeA->coef + nodeB->coef, nodeB);
+  }
+  
+}
+
+void funk::simplifyMulitiplication()
+{
+  bool nodeAConst = nodeA->isConstant(), nodeBConst = nodeB->isConstant(),
+    nodeADiv = nodeA->state == type::divide, nodeBDiv = nodeB->state == type::divide,
+    nodeAAdd = nodeA->state == type::addition, nodeBAdd = nodeB->state == type::addition;
+
+  if (nodeADiv || nodeBDiv){
+    if (nodeADiv && nodeBDiv){
+      multiplyDivisions();
+    }
+    else{
+      upjumpDivision();
+    }
+  }
+  else if (nodeAAdd || nodeBAdd){
+    distributeNodes();
+  }
+  else if (nodeAConst){
+    evaluateCoef(nodeA->coef * nodeB->coef, nodeB);
+  }
+  else if (nodeBConst){
+    evaluateCoef(nodeA->coef * nodeB->coef, nodeA); 
+  }
+    
+}
+
+void funk::simplifyDivision(){
+
+}
+
+
 	//simplify children
 
 	//coeficient is 0
@@ -472,6 +521,87 @@ void funk::simplify(){
 		//node A is 0
 		//node B is 0
 		//node B is 1
+
+void funk::simplify(){
+  if (nodeA){
+    nodeA->simplify();
+  }
+  if (nodeB){
+    nodeB->simplify();
+  }
+  if (isConstant())
+  {
+    setBase();
+  }
+  switch (state){
+  case type::base: break;
+  case type::addition:
+    breakExpo();
+    simplifyAddition();
+    break;
+  case type::multiply:
+    breakExpo();
+    simplifyMulitiplication();
+    break;
+  case type::divide:
+    breakExpo();
+    simplifyDivision();
+    break;
+  }
+  return;
+}
+
+bool funk::compareMathEquiv(const funk& obj){
+  return *this == obj || (this->coef == 0 && obj.coef == 0) || (this->coef == obj.coef && this->expo == 0 && obj.expo == 0);
+}
+
+bool funk::statesAndNodesEqual(const funk& obj){
+  return this->state == obj.state && (this->state == type::base ? true : this->nodeA == obj.nodeA && this->nodeB == this->nodeB);
+}
+
+bool funk::compareWithoutCoef(const funk& obj){
+  return this->expo == obj.expo && statesAndNodesEqual(obj);
+}
+
+bool funk::operator==(const funk& obj){
+    return this->coef == obj.coef && compareWithoutCoef(obj);
+}
+
+funk funk::operator+(const funk& obj){ //Might need to return a reference
+	funk ret;				
+	ret.state = type::addition;
+	
+	ret.nodeA.reset(new funk(*this));
+	ret.nodeB.reset(new funk(obj));
+	//ret->simplify();
+        			
+	return ret;
+}
+
+funk funk::operator*(const funk& obj){
+	funk ret;
+	ret.state = type::multiply;
+	ret.nodeA.reset(new funk(*this));
+	ret.nodeA.reset(new funk(obj));
+
+	//ret -> simplify();
+	return ret;
+}
+
+funk funk::operator/(const funk& obj){
+  // std::unique_ptr<funk> objcopy(new funk);
+  // 	* objcopy = obj;
+  // 	std::unique_ptr<funk> thiscopy(new funk);
+  // 	* thiscopy = *this;
+	funk ret;
+	ret.state = type::divide;
+
+	ret.nodeA.reset(new funk(*this));
+	ret.nodeB.reset(new funk(obj));
+	
+	//	ret.simplify();
+	
+	return ret;
 }
 
 

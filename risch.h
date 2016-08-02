@@ -19,10 +19,10 @@ class funk{
 	funk(const funk &obj);
 	funk(funk&& obj);	
 
-	//~funk();
+        ~funk() = default;
 
 	funk& operator=(const funk& obj);
-	//funk& operator=(const funk&& obj);
+	funk& operator=(funk&& obj);
 
 	funk operator+(const funk& obj);	
 	funk operator*(const funk& obj);
@@ -69,11 +69,14 @@ class funk{
 	//sinngle nodes go to A
 
  private:
+	void moveTo(funk&);
 	void replaceWith(const funk&);
 	void replaceWith(const std::unique_ptr<funk>&);
 	void breakExpo();
 	void evaluateCoef(int, std::unique_ptr<funk>&);
 	void multiplyDivisions();
+	void upjumpDivision();
+	void distributeNodes();
 	void setBase();
 	void simplifyAddition();
 	void simplifyMulitiplication();

@@ -470,7 +470,7 @@ void funk::simplifyDivide()
   if (nodeB->coef == 0){
     //an error has occured
   }
-  if (nodeB -> coef == (funk one(1)){
+  if (nodeB == 1) {
     this->replaceWith(nodeA);
     return;
   } 

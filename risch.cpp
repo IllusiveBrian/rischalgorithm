@@ -357,6 +357,7 @@ void funk::multiplyDivisions()
   toswitch->state = type::divide;
   toswitch->coef = this->nodeA->coef * this->nodeB->coef;
   toswitch->expo = 1;
+
   toswitch->nodeA.reset(new funk(*(this->nodeA->nodeA) * *(this->nodeB->nodeA)));
   toswitch->nodeB.reset(new funk(*(this->nodeA->nodeB) * *(this->nodeB->nodeB)));
   this->replaceWith(toswitch);
@@ -410,6 +411,56 @@ void funk::simplifyAddition()
   
 }
 
+funk * lazyAddDivide(funk A, funk B){
+  std::unique_ptr<funk>temp(new funk);
+  temp->state = type::addition;
+  std::unique_ptr<funk>div1(new funk);
+  div1->state = type::divide;
+  std::unique_ptr<funk>div2(new funk);
+  div2->state = type::divide;
+
+  div1-> *nodeA = A -> *nodeA; 
+  div1-> *nodeB = B;
+
+  div2-> *nodeA = A -> *nodeB;
+  div2 -> *nodeB = B;
+
+  temp -> nodeA = div1;
+  temp -> nodeB = div2;
+
+  temp -> simplify();
+  return temp;
+}
+
+funk * expandToDivide(funk f){
+  std::unique_ptr<funk>tempB(new funk);
+  tempB* = funk one(1);
+
+  std::unique_ptr<funk>tempA(new funk);
+  tempA* = f;      
+
+  std::unique_ptr<funk>temp(new funk);
+  temp -> state = divide;
+  temp -> nodeA = tempA;
+  temp -> nodeB = tempB;
+
+  temp -> simplify();
+  return temp; 
+}
+
+funk * divXdiv(funk A, funk B){
+  std::unique_ptr<funk>ret(new funk);
+  ret -> state = type::divide;
+
+//    A/B / C/D => D*A / B*C
+
+  ret -> *nodeA = A->*nodeA * B->*nodeB
+  ret -> *nodeB = A->*nodeB * B->*nodeA
+
+  ret -> simplify();
+  return ret;
+}
+
 void funk::simplifyDivide()
 {
   if(nodeA->coef == 0){
@@ -432,34 +483,17 @@ void funk::simplifyDivide()
     else nodeA -> expo -= node->B; nodeB -> expo = 0;
   }
   if (nodeA->state == addition){
-    std::unique_ptr<funk>temp(new funk);
-    temp->state = type::addition;
-    std::unique_ptr<funk>div1(new funk);
-    div1->state = type::divide;
-    std::unique_ptr<funk>div2(new funk);
-    div2->state = type::divide;
-
-    div1-> *nodeA = nodeA -> *nodeA; 
-    div1-> *nodeB = *nodeB;
-
-    div2-> *nodeA = nodeA -> *nodeB;
-    div2 -> *nodeB = *nodeB;
-
-    temp -> nodeA = div1;
-    temp -> nodeB = div2;
-      
-    this->replaceWith(temp);
+    this->replaceWith(lazyAddDiv(*nodeA,*nodeB));
   }
   if (nodeA -> state == type::divide || nodeB -> state == type::divide){
     if(nodeA -> state != type::divide)}
-      std::unique_ptr<funk>temp(new funk);
-      temp -> state = divide;
-      temp -> nodeA = nodeA;
-      
-      std::unique_ptr<funk>temp(new funk);
+      nodeA -> replaceWith(expandToDivide(nodeA)); 	 
     }
     if(nodeB -> state != type::divide){
+      nodeB -> replaceWith(expandToDivide(nodeB));
     }
+    replaceWith(divXdiv(*nodeA, *nodeB));
+  }
 }
 
 void funk::simplifyMulitiplication()
@@ -486,10 +520,6 @@ void funk::simplifyMulitiplication()
     evaluateCoef(nodeA->coef * nodeB->coef, nodeA); 
   }
     
-}
-
-void funk::simplifyDivision(){
-
 }
 
 int compare(funk a){

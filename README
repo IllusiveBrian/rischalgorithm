@@ -1,3 +1,15 @@
 Currently in segmented development, most of the code is elsewhere. 
-If you came here looking for the risch algorithm, I'm afraid you'll have to wait.
+Refactoring the code to fit univariate and coeficient format. Most of the code exists in the old format, new sections are uncommented and functioning. Newest section may not compile (unless stated by the commit).
+
+REFACTORING SCHEDULE:
+  funk class        X
+  parser&print      X
+  simplify          O
+  GCD
+  sqff
+  table
+  hermite
+  horowitz
+  roth/trager
+  risch
 

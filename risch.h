@@ -53,17 +53,18 @@ class funk{
 	funk lt();
 	int cont();
 	void pp();	
-	void print();
+	void print() const;
+	std::string build_print_string() const;
 	///organize function tools
 	void supersimplify();
-	void simplify();
+	funk& simplify();
 	void organize();
 	void degOrg();
 	void degOrg(char c);
 	bool isConstant();
 	bool isInteger();
 	bool isZero();
-	
+
 	//holds protostate during parsing
 	std::string pstring;
 
@@ -102,5 +103,7 @@ std::unique_ptr<funk> string_to_funk(const std::string&);
 
 funk GCD(funk, funk);
 int iGCD(int, int);
+
+std::ostream& operator<<(std::ostream&, const funk&);
 
 #endif

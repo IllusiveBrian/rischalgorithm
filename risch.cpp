@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <stdlib.h>
 #include <algorithm>
 #include <utility>
@@ -136,8 +137,12 @@ void funk::replaceWith(const funk& obj){
   this->state = obj.state;
   this->coef = obj.coef;
   this->expo = obj.expo;
-  this->nodeA.reset(new funk(*obj.nodeA));
-  this->nodeB.reset(new funk(*obj.nodeB));
+  if (obj.nodeA){
+    this->nodeA.reset(new funk(*obj.nodeA));
+  }
+  if (obj.nodeB){
+    this->nodeB.reset(new funk(*obj.nodeB));
+  }
 }
 
 void funk::replaceWith(const std::unique_ptr<funk>& obj)
@@ -262,62 +267,72 @@ bool degCompare(const std::unique_ptr<funk>& a, const std::unique_ptr<funk>& b){
 }
 */
 
-void funk::print(){
+std::ostream& operator<<(std::ostream& os, const funk& out){
+  return os << out.build_print_string();
+}
+
+void funk::print() const{
+  std::cout << build_print_string();
+}
+
+std::string funk::build_print_string() const{
+  std::stringstream ret;
 	if (coef != 1){
-		cout << coef;
+		ret << coef;
 	}
 
 	switch (state)
 	{
 		case type::base: 	
-					if (expo != 0) cout << "x" ;
+					if (expo != 0) ret << "x" ;
 					break;
 		case type::addition:			
-					cout << "(";
-					nodeA -> print();
-					cout << "+";
-					nodeB -> print();			
-					cout << ")";
+					ret << "(";
+					ret << nodeA -> build_print_string();
+					ret << "+";
+					ret << nodeB -> build_print_string();			
+					ret << ")";
 					break;
 		case  type::multiply: 
-					cout << "(";
-					nodeA -> print();
-					cout << "*";
-					nodeB -> print();
-					cout << ")";
+					ret << "(";
+					ret << nodeA -> build_print_string();
+					ret << "*";
+				        ret << nodeB -> build_print_string();
+					ret << ")";
 					break;
 		case  type::divide:
-					cout << "(";
-					nodeA -> print();
-					cout << ")/(";
-					nodeB -> print();
-					cout << ")";
+					ret << "(";
+					ret << nodeA -> build_print_string();
+					ret << ")/(";
+					ret << nodeB -> build_print_string();
+					ret << ")";
 					break;
 		
 		case  type::cosine:
-					cout << "cos(";
-					nodeA -> print();
-					cout << ")";
+					ret << "cos(";
+					ret << nodeA -> build_print_string();
+					ret << ")";
 					break;
 		case  type::sine:
-					cout << "sin(";
-					nodeA -> print();
-					cout << ")";
+					ret << "sin(";
+					ret << nodeA -> build_print_string();
+					ret << ")";
 					break;
 		case  type::logarithm:
-					cout << "log(";
-					nodeA -> print();
-					cout << ")";
+					ret << "log(";
+					ret << nodeA -> build_print_string();
+					ret << ")";
 					break;
 		case type::exponential:
-					cout << "exp(";
-					nodeA -> print();
-					cout << ")";
+					ret << "exp(";
+					ret << nodeA -> build_print_string();
+					ret << ")";
 					break;
 	
-		default:		cout << "This should never occur also IB was here";
+		default:		ret << "This should never occur also IB was here";
 	}
-	if (expo > 1) cout << "^" << expo ;
+	if (expo > 1) ret << "^" << expo ;
+	return ret.str();
 }
 
 //Returns whether the function is constant, ie whether all greatest grandchildren are constants
@@ -337,6 +352,7 @@ bool funk::isZero()
 }
 
 void funk::breakExpo(){
+  std::cout << "Calling breakExpo: " << *this << std::endl;
   if (this->expo > 1){
     unique_ptr<funk> tempMult, tempRepA(new funk(*this)), tempRepB(new funk(*this));
     tempMult->state = type::multiply;
@@ -412,14 +428,18 @@ void funk::setBase()
 void funk::simplifyAddition()
 {
   if(nodeA->coef == 0){
+      std::cout << "nodea->coef == 0" << std::endl;
     this->replaceWith(nodeB);
   }
   else if (nodeB->coef == 0){
+    std::cout << "nodeb->coef == 0" << std::endl;
     this->replaceWith(nodeA);
   }
   else if (nodeA->compareWithoutCoef(*nodeB)){
+    std::cout << "nodeA == nodeB wo coef";
     evaluateCoef(nodeA->coef + nodeB->coef, nodeB);
   }
+  std::cout << "exiting simplifyAddition" << std::endl;
   
 }
 
@@ -580,7 +600,7 @@ void funk::organize(){
   }	
 }
 	
-void funk::simplify(){
+funk& funk::simplify(){
   if (nodeA){
     nodeA->simplify();
   }
@@ -626,7 +646,7 @@ void funk::simplify(){
   
   }
   this -> organize();
-  return;
+  return *this;
 }
 
 bool funk::compareMathEquiv(const funk& obj){

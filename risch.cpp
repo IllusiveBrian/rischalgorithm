@@ -320,19 +320,6 @@ void funk::print(){
 	if (expo > 1) cout << "^" << expo ;
 }
 
-funk funk::operator+(const funk& obj){
-	funk ret;				
-	ret.state = type::addition;
-	
-	ret.nodeA.reset(new funk(*this));
-	ret.nodeB.reset(new funk(obj));
-	//ret->simplify();
-	
-	auto tet = std::unique_ptr<funk>(new funk);
-	* tet = ret;			
-	return *tet;
-}
-
 //Returns whether the function is constant, ie whether all greatest grandchildren are constants
 bool funk::isConstant(){
   return isInteger() || ((nodeA ? nodeA->isConstant() : true) && (nodeB ? nodeB->isConstant(): true));
@@ -347,7 +334,7 @@ bool funk::isInteger()
 bool funk::isZero()
 {
   return coef == 0;
-}g
+}
 
 void funk::breakExpo(){
   if (this->expo > 1){
@@ -436,48 +423,34 @@ void funk::simplifyAddition()
   
 }
 
-std::unique_ptr<funk> lazyAddDivide(){
-  std::unique_ptr<funk>div1(new funk());
-  div1->state = type::divide;
-  std::unique_ptr<funk>div2(new funk());
-  div2->state = type::divide;
+void funk::lazyAddDivide(){
+  funk div1, div2;
+  div1.state = type::divide;
+  div2.state = type::divide;
 
-  div1->nodeA = std::move(this->nodeA->nodeA); 
-  div1->nodeB = std::move(this->nodeB);
+  div1.nodeA = std::move(this->nodeA->nodeA); 
+  div1.nodeB = std::move(this->nodeB);
 
-  div2->nodeA = std::move(this->nodeA->nodeB);
-  div2->nodeB = std::move(this->nodeB);
+  div2.nodeA = std::move(this->nodeA->nodeB);
+  div2.nodeB = std::move(this->nodeB);
 
   this->replaceWith(div1 + div2);
 }
 
-funk * expandToDivide(funk f){
-  std::unique_ptr<funk>tempB(new funk);
-  tempB* = funk one(1);
-
-  std::unique_ptr<funk>tempA(new funk);
-  tempA* = f;      
-
-  std::unique_ptr<funk>temp(new funk);
-  temp -> state = divide;
-  temp -> nodeA = tempA;
-  temp -> nodeB = tempB;
-
-  temp -> simplify();
-  return temp; 
+void funk::expandToDivide(std::unique_ptr<funk>& node){    
+  node->replaceWith(funk(1)/funk(std::move(*node)));
 }
 
-funk * divXdiv(funk A, funk B){
-  std::unique_ptr<funk>ret(new funk);
-  ret -> state = type::divide;
+void funk::divXdiv(){//A rated XXX function
+  std::unique_ptr<funk>ret(new funk());
+  ret->state = type::divide;
 
 //    A/B / C/D => D*A / B*C
 
-  ret -> *nodeA = A->*nodeA * B->*nodeB
-  ret -> *nodeB = A->*nodeB * B->*nodeA
-
-  ret -> simplify();
-  return ret;
+  ret->nodeA->replaceWith(*(this->nodeA->nodeA) * *(this->nodeB->nodeB));
+  ret->nodeB->replaceWith(*(this->nodeA->nodeB) * *(this->nodeB->nodeA));
+  this->replaceWith(ret);
+  this->simplify();
 }
 
 void funk::simplifyDivide()
@@ -489,7 +462,7 @@ void funk::simplifyDivide()
   if (nodeB->coef == 0){
     //an error has occured
   }
-  if (nodeB == 1) {
+  if (*nodeB == 1) {
     this->replaceWith(nodeA);
     return;
   } 
@@ -498,20 +471,26 @@ void funk::simplifyDivide()
     nodeA->coef = nodeA->coef / div;
     nodeB->coef = nodeB->coef / div;
 
-    if (nodeA->expo < nodeB->expo) nodeB -> expo -= node->A; nodeA -> expo = 0;
-    else nodeA -> expo -= node->B; nodeB -> expo = 0;
+    if (nodeA->expo < nodeB->expo){
+      nodeB -> expo -= nodeA->expo;
+      nodeA -> expo = 0;
+    }
+    else{
+      nodeA -> expo -= nodeB->expo;
+      nodeB -> expo = 0;
+    }
   }
-  if (nodeA->state == addition){
-    lazyAddDiv();
+  if (nodeA->state == type::addition){
+    lazyAddDivide();
   }
   if (nodeA -> state == type::divide || nodeB -> state == type::divide){
-    if(nodeA -> state != type::divide)}
-      nodeA -> replaceWith(expandToDivide(nodeA)); 	 
+    if(nodeA -> state != type::divide){
+      expandToDivide(nodeA); 	 
     }
     if(nodeB -> state != type::divide){
-      nodeB -> replaceWith(expandToDivide(nodeB));
+      expandToDivide(nodeB);
     }
-    replaceWith(divXdiv(*nodeA, *nodeB));
+    divXdiv();
   }
 }
 
@@ -635,12 +614,16 @@ void funk::simplify(){
     if (this->nodeA->isZero())
       *this = 1;
     break;
-  case type::exponent:
+  case type::exponential:
     simplifyExponent();
     break;
   case type::logarithm:
     simplifyLogarithm();
     break;
+  case type::broken:
+  default:
+    throw std::domain_error("Funk was not assigned a type");
+  
   }
   this -> organize();
   return;
@@ -666,7 +649,7 @@ bool funk::operator==(const int& constant){
   return (this->expo == 0 && this->coef == constant) || (constant == 0 && isZero());
 }
 
-#define inequalityComparison(sign) (this->type sign obj.type) || (this->type == obj.type && this->expo sign obj.expo) || (this->expo == obj.expo && this->nodeA sign obj.nodeA) || (this->nodeA == obj.nodeA && this->nodeB sign obj.nodeB)
+#define inequalityComparison(sign) (this->state sign obj.state) || (this->state == obj.state && this->expo sign obj.expo) || (this->expo == obj.expo && this->nodeA sign obj.nodeA) || (this->nodeA == obj.nodeA && this->nodeB sign obj.nodeB)
 bool funk::operator<(const funk& obj)
 {
   return inequalityComparison(<);
@@ -683,7 +666,7 @@ funk funk::operator+(const funk& obj){ //Might need to return a reference
 	
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeB.reset(new funk(obj));
-	ret->simplify();
+	ret.simplify();
         			
 	return ret;
 }
@@ -694,7 +677,7 @@ funk funk::operator*(const funk& obj){
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeA.reset(new funk(obj));
 
-	ret -> simplify();
+	ret.simplify();
 	return ret;
 }
 
@@ -709,7 +692,7 @@ funk funk::operator/(const funk& obj){
 	ret.nodeA.reset(new funk(*this));
 	ret.nodeB.reset(new funk(obj));
 	
-	//	ret.simplify();
+	ret.simplify();
 	
 	return ret;
 }
@@ -1582,8 +1565,8 @@ bool isOnlyDouble(const char* str) //code by Chris on SO (thanks, <3 Hubbubble)
     return true;
 }
 
-int ignore_parens(int i, string str){
-	int pcounter = 1;
+size_t ignore_parens(size_t i, string str){
+	size_t pcounter = 1;
 	while (pcounter != 0){
 		i++;
 		if (str.at(i) == '(') pcounter++;
@@ -1655,7 +1638,7 @@ std::unique_ptr<funk> X2C(std::unique_ptr<funk>curr){
 }
 
 std::unique_ptr<funk> E2X(std::unique_ptr<funk> curr){
-	for (int i = 0; i < curr -> pstring.size(); i++){	
+  for (size_t i = 0; i < curr -> pstring.size(); ++i){	
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '^'){
@@ -1669,7 +1652,7 @@ std::unique_ptr<funk> E2X(std::unique_ptr<funk> curr){
 }
 
 std::unique_ptr<funk> M2E(std::unique_ptr<funk> curr){
-	for (int i = 0; i < curr -> pstring.size(); i++){
+	for (size_t i = 0; i < curr -> pstring.size(); ++i){
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '*'){
@@ -1707,7 +1690,7 @@ std::unique_ptr<funk> M2E(std::unique_ptr<funk> curr){
 }
 
 std::unique_ptr<funk> F2M(std::unique_ptr<funk> curr){
-	for (int i = 0; i < curr -> pstring.size(); i++){
+	for (size_t i = 0; i < curr -> pstring.size(); ++i){
 		if (curr -> pstring.at(i) == '(') i = ignore_parens(i, curr->pstring);	
 
 		if (curr -> pstring.at(i) == '+'){

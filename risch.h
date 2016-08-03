@@ -19,6 +19,7 @@ class funk{
 	funk();
 	funk(int i);
 	funk(const funk &obj);
+	funk(const std::string&);
 	funk(funk&& obj);	
 
         ~funk() = default;
@@ -85,6 +86,9 @@ class funk{
 	void multiplyDivisions();
 	void upjumpDivision();
 	void distributeNodes();
+	void lazyAddDivide();
+	void expandToDivide(std::unique_ptr<funk>&);
+	void divXdiv();
 	void setBase();
 	void simplifyAddition();
 	void simplifyMulitiplication();
@@ -94,8 +98,9 @@ class funk{
 	
 };
 
-std::unique_ptr<funk> string_to_funk(std::string);
+std::unique_ptr<funk> string_to_funk(const std::string&);
 
 funk GCD(funk, funk);
+int iGCD(int, int);
 
 #endif

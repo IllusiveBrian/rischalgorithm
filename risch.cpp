@@ -32,6 +32,10 @@ funk::funk(const funk &obj){
 
 }
 
+funk::funk(const std::string& str){
+  this->moveTo(*(string_to_funk(str).release()));
+}
+
 funk::funk(funk&& obj){
   this->moveTo(obj);
 }
@@ -331,18 +335,19 @@ funk funk::operator+(const funk& obj){
 
 //Returns whether the function is constant, ie whether all greatest grandchildren are constants
 bool funk::isConstant(){
+  return isInteger() || ((nodeA ? nodeA->isConstant() : true) && (nodeB ? nodeB->isConstant(): true));
 }
 
-//Returns whether this particular funk is a constant (checks independent of type
+//Returns whether this particular funk is a constant (checks independent of type)
 bool funk::isInteger()
 {
-  return state == type::base || expo == 0 || isZero();
+  return expo == 0 || isZero();
 }
 
 bool funk::isZero()
 {
   return coef == 0;
-}
+}g
 
 void funk::breakExpo(){
   if (this->expo > 1){
@@ -431,25 +436,19 @@ void funk::simplifyAddition()
   
 }
 
-funk * lazyAddDivide(funk A, funk B){
-  std::unique_ptr<funk>temp(new funk);
-  temp->state = type::addition;
-  std::unique_ptr<funk>div1(new funk);
+std::unique_ptr<funk> lazyAddDivide(){
+  std::unique_ptr<funk>div1(new funk());
   div1->state = type::divide;
-  std::unique_ptr<funk>div2(new funk);
+  std::unique_ptr<funk>div2(new funk());
   div2->state = type::divide;
 
-  div1-> *nodeA = A -> *nodeA; 
-  div1-> *nodeB = B;
+  div1->nodeA = std::move(this->nodeA->nodeA); 
+  div1->nodeB = std::move(this->nodeB);
 
-  div2-> *nodeA = A -> *nodeB;
-  div2 -> *nodeB = B;
+  div2->nodeA = std::move(this->nodeA->nodeB);
+  div2->nodeB = std::move(this->nodeB);
 
-  temp -> nodeA = div1;
-  temp -> nodeB = div2;
-
-  temp -> simplify();
-  return temp;
+  this->replaceWith(div1 + div2);
 }
 
 funk * expandToDivide(funk f){
@@ -503,7 +502,7 @@ void funk::simplifyDivide()
     else nodeA -> expo -= node->B; nodeB -> expo = 0;
   }
   if (nodeA->state == addition){
-    this->replaceWith(lazyAddDiv(*nodeA,*nodeB));
+    lazyAddDiv();
   }
   if (nodeA -> state == type::divide || nodeB -> state == type::divide){
     if(nodeA -> state != type::divide)}
@@ -1730,12 +1729,11 @@ std::unique_ptr<funk> F2M(std::unique_ptr<funk> curr){
 	return M2E(std::move(curr));
 }
 
-std::unique_ptr<funk> string_to_funk(string in){
-  std::unique_ptr<funk> start(new funk);	
-	in.erase(std::remove(in.begin(),in.end(),' '),in.end());
-	start -> pstring = in;
-	start = F2M(std::move(start));
-	return start; 
+std::unique_ptr<funk> string_to_funk(const string& str){
+  std::unique_ptr<funk> start(new funk);
+  std::string in(str);
+  in.erase(std::remove(in.begin(),in.end(),' '),in.end());
+  start -> pstring = in;
+  start = F2M(std::move(start));
+  return start; 
 }
-
-//#endif

@@ -1,12 +1,21 @@
 #include "risch.h"
 #include <string>
 
+void test(const std::string& test)
+{
+  std::cout << "Testing " << test << std::endl;
+  funk theTest(test);
+  std::cout << "Funk before simplify: " << theTest << std::endl;
+  theTest.simplify();
+  std::cout << "Funk after simplify: " << theTest << std::endl;
+}
+
 int main(){
 	
-	std::string sa = "x^2 + 7*x + -6";
-	std::string sb = "x^2 + -5*x + 0";
+  test("x^2 + 7*x + -6");
+  test("x^2 + -5*x + 0");
 
-	std::unique_ptr<funk> curr1;
+	/*	std::unique_ptr<funk> curr1;
 	curr1 = string_to_funk(sa);
 	
 	std::unique_ptr<funk> curr2;
@@ -44,7 +53,7 @@ int main(){
 	//socks = GCD( *curr1, *curr2);
 	
 	//socks.print();
-	std::	cout << std::endl;
+	std::	cout << std::endl;*/
 	
 	return 0;
 }

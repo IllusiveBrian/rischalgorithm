@@ -290,8 +290,7 @@ std::string funk::build_print_string() const{
 					ret << "(";
 					ret << nodeA -> build_print_string();
 					ret << "+";
-					ret << nodeB -> build_print_string();			
-					ret << ")";
+					ret << nodeB -> build_print_string();		       					      ret << ")";
 					break;
 		case  type::multiply: 
 					ret << "(";

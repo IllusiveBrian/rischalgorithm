@@ -352,7 +352,7 @@ bool funk::isZero()
 }
 
 void funk::breakExpo(){
-  std::cout << "Calling breakExpo: " << *this << std::endl;
+  //std::cout << "Calling breakExpo: " << *this << std::endl;
   if (this->expo > 1){
     unique_ptr<funk> tempMult, tempRepA(new funk(*this)), tempRepB(new funk(*this));
     tempMult->state = type::multiply;
@@ -428,18 +428,15 @@ void funk::setBase()
 void funk::simplifyAddition()
 {
   if(nodeA->coef == 0){
-      std::cout << "nodea->coef == 0" << std::endl;
     this->replaceWith(nodeB);
   }
   else if (nodeB->coef == 0){
-    std::cout << "nodeb->coef == 0" << std::endl;
     this->replaceWith(nodeA);
   }
   else if (nodeA->compareWithoutCoef(*nodeB)){
-    std::cout << "nodeA == nodeB wo coef";
     evaluateCoef(nodeA->coef + nodeB->coef, nodeB);
   }
-  std::cout << "exiting simplifyAddition" << std::endl;
+  //std::cout << "exiting simplifyAddition" << std::endl;
   
 }
 

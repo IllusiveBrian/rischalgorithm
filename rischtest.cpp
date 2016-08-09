@@ -1,17 +1,50 @@
 #include "risch.h"
 #include <string>
+#include <cstring>
 
-void test(const std::string& test)
+funk testSimplify(const std::string& test, bool print = true)
 {
-  std::cout << "Testing " << test << std::endl;
+  if (print) std::cout << "Testing " << test << std::endl;
   funk theTest(test);
-  std::cout << "Funk before simplify: " << theTest << std::endl;
+  if (print) std::cout << "Funk before simplify: " << theTest << std::endl;
   theTest.simplify();
-  std::cout << "Funk after simplify: " << theTest << std::endl;
+  if (print) std::cout << "Funk after simplify: " << theTest << std::endl;
+  return theTest;
 }
 
-int main(){
-	
+void test(const std::string& test, const std::string& compare = "", bool printProcess = true)
+{
+  funk theTest = testSimplify(test, printProcess);
+  //Put more tests here
+  std::string testString = theTest.build_print_string(), compareString = std::funk(compare).build_print_string();
+  if (compare != "" && testString != compareString){
+    std::cout << "Result string " << testString << " does not match expected string " << compare << std::endl;
+  }
+}
+
+int main(int argc, char** argv){
+  if (argc == 1 || !std::strcmp(argv[1], "-dst")){
+    test("0");
+    test("1");
+    test("52");
+    test("0000000001");
+    test("0*x");
+    test("392*x");
+    test("29*x^2");
+    test("029*x^5");
+    test("8*x^0");
+    test("0*x^0");
+    test("x + 0");
+    test("0 + x");
+    test("0*x + x^2");
+    test("x + x");
+    test("3*x + 6*x");
+    test("-9*x - -20*x", "11x");
+    test("2 + 2", "4");
+    test("3-1", "2");
+    test("592 * 2193", "1298256");
+  }
+  
   test("x^2 + 7*x + -6");
   test("x^2 + -5*x + 0");
 

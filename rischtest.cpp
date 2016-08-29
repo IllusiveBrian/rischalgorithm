@@ -47,8 +47,17 @@ int main(int argc, char** argv){
     test("6 / 2", "3");
     test("(6 * x)/(3 * x)", "2");
     test("(x / 2) * (2 / x)", "1");
+    test("log(1)", "0");
+    test("log(x)", "log(x)");
+    test("e^0", "1");
+    test("e^1", "e^1");
+    test("2 * e^(3 * x + x)", "2 * e^(4x)");
     test("log(e^(2 + x))", "2 + x");
-    test("log(e^4 * x + -3 * (2 * x))", "log((e^4 * x) + -3x + -6)");
+    test("log(e^4 * x + -3 * (2 * x))", "log((e^4 * x) + -6x)");
+    test("sin(30)", "sin(30)");
+    test("sin(0)", "0");
+    test("cos(0)", "1");
+    test("cos(5 + x)", "cos(5 + x)");
   }
   test("x^2 + 7*x + -6");
   test("x^2 + -5*x + 0");

@@ -34,6 +34,8 @@ class funk{
 
 	bool operator==(const funk&);
 	bool operator==(const int&);
+	bool operator!=(const funk&);
+	bool operator!=(const int&);
 	bool operator<(const funk&);
 	bool operator>(const funk&);
 	bool statesAndNodesEqual(const funk& obj);

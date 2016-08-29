@@ -8,7 +8,7 @@ funk testSimplify(const std::string& test, bool print = true)
   funk theTest(test);
   if (print) std::cout << "Funk before simplify: " << theTest << std::endl;
   theTest.simplify();
-  if (print) std::cout << "Funk after simplify: " << theTest << std::endl;
+  if (print) std::cout << "Funk after simplify: " << theTest  << std::endl;
   return theTest;
 }
 
@@ -16,9 +16,10 @@ void test(const std::string& test, const std::string& compare = "", bool printPr
 {
   funk theTest = testSimplify(test, printProcess);
   //Put more tests here
-  std::string testString = theTest.build_print_string(), compareString = std::funk(compare).build_print_string();
-  if (compare != "" && testString != compareString){
-    std::cout << "Result string " << testString << " does not match expected string " << compare << std::endl;
+  if (compare != ""){
+    funk compareTest(compare);
+    if (compareTest != theTest)
+      std::cout << "Result funk " << theTest << " does not match expected funk " << compareTest << std::endl;
   }
 }
 
@@ -39,12 +40,16 @@ int main(int argc, char** argv){
     test("0*x + x^2");
     test("x + x");
     test("3*x + 6*x");
-    test("-9*x - -20*x", "11x");
+    test("-9*x + 20*x", "11x");
     test("2 + 2", "4");
-    test("3-1", "2");
+    test("3+-1", "2");
     test("592 * 2193", "1298256");
+    test("6 / 2", "3");
+    test("(6 * x)/(3 * x)", "2");
+    test("(x / 2) * (2 / x)", "1");
+    test("log(e^(2 + x))", "2 + x");
+    test("log(e^4 * x + -3 * (2 * x))", "log((e^4 * x) + -3x + -6)");
   }
-  
   test("x^2 + 7*x + -6");
   test("x^2 + -5*x + 0");
 
@@ -88,5 +93,5 @@ int main(int argc, char** argv){
 	//socks.print();
 	std::	cout << std::endl;*/
 	
-	return 0;
+  return 0;
 }

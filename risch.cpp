@@ -666,6 +666,14 @@ bool funk::operator==(const int& constant){
   return (this->expo == 0 && this->coef == constant) || (constant == 0 && isZero());
 }
 
+bool funk::operator!=(const funk& obj){
+  return !(*this == obj);
+}
+
+bool funk::operator!=(const int& constant){
+  return !(*this == constant);
+}
+
 #define inequalityComparison(sign) (this->state sign obj.state) || (this->state == obj.state && this->expo sign obj.expo) || (this->expo == obj.expo && this->nodeA sign obj.nodeA) || (this->nodeA == obj.nodeA && this->nodeB sign obj.nodeB)
 bool funk::operator<(const funk& obj)
 {

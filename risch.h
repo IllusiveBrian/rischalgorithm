@@ -32,15 +32,15 @@ class funk{
 	funk operator*(const funk& obj);
 	funk operator/(const funk& obj);	
 
-	bool operator==(const funk&);
-	bool operator==(const int&);
-	bool operator!=(const funk&);
-	bool operator!=(const int&);
-	bool operator<(const funk&);
-	bool operator>(const funk&);
-	bool statesAndNodesEqual(const funk& obj);
-	bool compareWithoutCoef(const funk& obj);
-	bool compareMathEquiv(const funk&);
+	bool operator==(const funk&) const;
+	bool operator==(const int&) const;
+	bool operator!=(const funk&) const;
+	bool operator!=(const int&) const;
+	bool operator<(const funk&) const;
+	bool operator>(const funk&) const;
+	bool statesAndNodesEqual(const funk& obj) const;
+	bool compareWithoutCoef(const funk& obj) const;
+	bool compareMathEquiv(const funk&) const;
 	//need some way to incoroprate functions like sin, cos, tan.
 	//need some way to find neccisary functions...
 
@@ -63,9 +63,9 @@ class funk{
 	void organize();
 	void degOrg();
 	void degOrg(char c);
-	bool isConstant();
-	bool isInteger();
-	bool isZero();
+	bool isConstant() const;
+	bool isInteger() const;
+	bool isZero() const;
 
 	//holds protostate during parsing
 	std::string pstring;
